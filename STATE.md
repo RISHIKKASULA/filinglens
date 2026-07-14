@@ -26,7 +26,7 @@ coverage to gate` · `ci: finalize workflow` · `docs: write README with measure
 - [x] Day A: scaffold
 - [x] Day A: corpus manifest + EDGAR fetch + pinning
 - [x] Day A: sanity command
-- [ ] §0 sanity gate reviewed → ADR-001
+- [x] §0 sanity gate reviewed → ADR-001 PASS (10/10, 2026-07-14)
 - [ ] Day B
 - [ ] Day C
 - [ ] Day D
