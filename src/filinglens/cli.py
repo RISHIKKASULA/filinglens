@@ -2,6 +2,9 @@
 
 import argparse
 import sys
+from pathlib import Path
+
+from filinglens import corpus
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -9,15 +12,41 @@ def main(argv: list[str] | None = None) -> int:
         prog="filinglens",
         description="XBRL-graded evaluation harness for local-LLM financial extraction.",
     )
+    parser.add_argument(
+        "--manifest", type=Path, default=corpus.DEFAULT_MANIFEST_PATH, help="corpus.yaml path"
+    )
+    parser.add_argument(
+        "--cache", type=Path, default=corpus.DEFAULT_CACHE_DIR, help="cache directory"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    subparsers.add_parser("fetch", help="Fetch and pin the corpus (writes corpus.yaml)")
+    fetch_parser = subparsers.add_parser(
+        "fetch", help="Pin the corpus (writes corpus.yaml) and cache filing artifacts"
+    )
+    fetch_parser.add_argument(
+        "tickers",
+        nargs="*",
+        default=list(corpus.V01_TICKERS),
+        help="tickers to fetch (default: the frozen v0.1 corpus)",
+    )
 
     args = parser.parse_args(argv)
 
     if args.command == "fetch":
-        print("fetch: not implemented yet", file=sys.stderr)
-        return 1
+        return _cmd_fetch(args)
+    return 0
+
+
+def _cmd_fetch(args: argparse.Namespace) -> int:
+    tickers = tuple(t.upper() for t in args.tickers)
+    manifest = corpus.pin_corpus(tickers, args.manifest)
+    for ticker in tickers:
+        pin = manifest.get(ticker)
+        if pin is None:
+            print(f"error: {ticker} could not be pinned", file=sys.stderr)
+            return 1
+        corpus.fetch_artifacts(pin, args.cache)
+    print(f"corpus pinned in {args.manifest}; artifacts cached under {args.cache}")
     return 0
 
 

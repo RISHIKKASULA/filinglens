@@ -1,0 +1,27 @@
+# v0.1 KPIs (frozen, architecture.md §2).
+# Each KPI has an ordered us-gaap tag-fallback chain: the first tag present for the pinned
+# fiscal period wins; if none resolve, the item is `no-ground-truth` and excluded from
+# scoring (counted in the report). Custom extension tags are out of scope permanently.
+kpis:
+  revenue:
+    unit: USD
+    tags:
+      - RevenueFromContractWithCustomerExcludingAssessedTax
+      - Revenues
+      - RevenueFromContractWithCustomerIncludingAssessedTax
+  net_income:
+    unit: USD
+    tags:
+      - NetIncomeLoss
+  eps_diluted:
+    unit: USD/shares
+    tags:
+      - EarningsPerShareDiluted
+  total_assets:
+    unit: USD
+    tags:
+      - Assets
+  operating_cash_flow:
+    unit: USD
+    tags:
+      - NetCashProvidedByUsedInOperatingActivities
