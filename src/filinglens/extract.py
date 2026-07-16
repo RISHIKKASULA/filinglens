@@ -184,6 +184,33 @@ def write_config(
     return config
 
 
+def preflight_contexts(
+    pins: Sequence[CompanyPin],
+    cache_root: Path = corpus.DEFAULT_CACHE_DIR,
+    min_context_chars: int = sections.MIN_STATEMENTS_CHARS,
+) -> None:
+    """Check every company's statements context before spending a call on it (ADR-002).
+
+    A stub context does not announce itself in the results: the model answers "I can't
+    find it", the grader records a failure, and the run looks like evidence about the
+    model when it is evidence about the harness. Worse, the damage is one-directional and
+    lands entirely on the section arm, which is half of what the ablation compares. So
+    this runs first and raises on the whole grid rather than let one silent stub through.
+    """
+    broken: list[str] = []
+    for pin in pins:
+        text = corpus.load_filing_text(pin, cache_root)
+        try:
+            sections.validate_statements(text, label=pin.ticker, min_chars=min_context_chars)
+        except sections.StatementsSliceError as exc:
+            broken.append(str(exc))
+    if broken:
+        raise sections.StatementsSliceError(
+            "refusing to run the grid; statements context missing for "
+            f"{len(broken)} filing(s):\n  " + "\n  ".join(broken)
+        )
+
+
 def run_grid(
     pins: Sequence[CompanyPin],
     kpis: Sequence[KpiSpec],
@@ -194,8 +221,13 @@ def run_grid(
     runs_dir: Path = DEFAULT_RUNS_DIR,
     cache_root: Path = corpus.DEFAULT_CACHE_DIR,
     progress: bool = False,
+    min_context_chars: int = sections.MIN_STATEMENTS_CHARS,
 ) -> pd.DataFrame:
     """Run the grid, resuming any work already on disk, and write results.parquet.
+
+    Every company's statements context is checked before the first call (ADR-002), so a
+    filing whose Item 8 is a cross-reference stops the run instead of quietly producing
+    fake model failures.
 
     Iterates models outermost (one model loaded at a time, §6). A call that raises is
     recorded with the exception text and an empty answer rather than aborting: one bad
@@ -203,6 +235,7 @@ def run_grid(
     which is the honest reading of a call that produced nothing.
     """
     grid_cells = list(CELLS.values()) if cells is None else list(cells)
+    preflight_contexts(pins, cache_root, min_context_chars)
     run_dir = runs_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
     raw_path = run_dir / "raw.jsonl"

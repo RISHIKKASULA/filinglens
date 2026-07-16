@@ -6,7 +6,7 @@ from typing import Any
 import pandas as pd
 import pytest
 
-from filinglens import extract
+from filinglens import extract, sections
 from filinglens.corpus import CompanyPin, KpiSpec
 from filinglens.extract import CELLS, Cell, ResultRow
 from filinglens.models import ModelResponse, StubClient
@@ -121,7 +121,13 @@ def test_context_cache_builds_each_context_once(cache: Path) -> None:
 def test_run_grid_covers_every_combination(cache: Path, tmp_path: Path) -> None:
     clients = [_client("m1"), _client("m2")]
     frame = extract.run_grid(
-        PINS, KPIS, clients, run_id="t", runs_dir=tmp_path / "runs", cache_root=cache
+        PINS,
+        KPIS,
+        clients,
+        run_id="t",
+        runs_dir=tmp_path / "runs",
+        cache_root=cache,
+        min_context_chars=200,
     )
     # 2 companies x 2 KPIs x 2 models x 4 cells
     assert len(frame) == 2 * 2 * 2 * 4 == 32
@@ -134,7 +140,9 @@ def test_run_grid_covers_every_combination(cache: Path, tmp_path: Path) -> None:
 
 def test_run_grid_writes_parquet_and_raw_log(cache: Path, tmp_path: Path) -> None:
     runs = tmp_path / "runs"
-    extract.run_grid(PINS, KPIS, [_client()], run_id="t", runs_dir=runs, cache_root=cache)
+    extract.run_grid(
+        PINS, KPIS, [_client()], run_id="t", runs_dir=runs, cache_root=cache, min_context_chars=200
+    )
     assert (runs / "t" / "results.parquet").exists()
     assert (runs / "t" / "raw.jsonl").exists()
     assert (runs / "t" / "config.json").exists()
@@ -145,7 +153,13 @@ def test_run_grid_writes_parquet_and_raw_log(cache: Path, tmp_path: Path) -> Non
 def test_run_grid_records_the_model_answer(cache: Path, tmp_path: Path) -> None:
     client = _client(responder=lambda _: '{"value": 42, "scale": "millions"}')
     frame = extract.run_grid(
-        PINS, KPIS, [client], run_id="t", runs_dir=tmp_path / "runs", cache_root=cache
+        PINS,
+        KPIS,
+        [client],
+        run_id="t",
+        runs_dir=tmp_path / "runs",
+        cache_root=cache,
+        min_context_chars=200,
     )
     assert all(frame["raw_text"] == '{"value": 42, "scale": "millions"}')
     assert all(frame["error"] == "")
@@ -168,6 +182,7 @@ def test_structured_cells_pass_the_schema_and_freeform_does_not(
         run_id="t",
         runs_dir=tmp_path / "runs",
         cache_root=cache,
+        min_context_chars=200,
     )
     assert sum(s is not None for s in seen) == 2  # A2, B2
     assert sum(s is None for s in seen) == 2  # A1, B1
@@ -182,6 +197,7 @@ def test_run_grid_honours_a_cell_subset(cache: Path, tmp_path: Path) -> None:
         cells=[CELLS["A1"]],
         runs_dir=tmp_path / "runs",
         cache_root=cache,
+        min_context_chars=200,
     )
     assert set(frame["cell"]) == {"A1"}
     assert len(frame) == 4
@@ -189,7 +205,13 @@ def test_run_grid_honours_a_cell_subset(cache: Path, tmp_path: Path) -> None:
 
 def test_row_records_pinning_and_context_size(cache: Path, tmp_path: Path) -> None:
     frame = extract.run_grid(
-        PINS, KPIS, [_client()], run_id="t", runs_dir=tmp_path / "runs", cache_root=cache
+        PINS,
+        KPIS,
+        [_client()],
+        run_id="t",
+        runs_dir=tmp_path / "runs",
+        cache_root=cache,
+        min_context_chars=200,
     )
     row = frame[(frame["ticker"] == "AAA") & (frame["cell"] == "A1")].iloc[0]
     assert row["accession"] == "0000000111-25-000001"
@@ -216,6 +238,7 @@ def test_a_raising_call_is_recorded_and_does_not_kill_the_grid(cache: Path, tmp_
         run_id="t",
         runs_dir=tmp_path / "runs",
         cache_root=cache,
+        min_context_chars=200,
     )
     assert len(frame) == 16  # every item still present
     failed = frame[frame["kpi"] == "total_assets"]
@@ -237,14 +260,26 @@ def test_resume_skips_completed_items(cache: Path, tmp_path: Path) -> None:
         return '{"value": 1}'
 
     extract.run_grid(
-        PINS, KPIS, [_client(responder=counting)], run_id="t", runs_dir=runs, cache_root=cache
+        PINS,
+        KPIS,
+        [_client(responder=counting)],
+        run_id="t",
+        runs_dir=runs,
+        cache_root=cache,
+        min_context_chars=200,
     )
     first_pass = len(calls)
     assert first_pass == 16
 
     # Re-running the same grid must call the model zero more times.
     extract.run_grid(
-        PINS, KPIS, [_client(responder=counting)], run_id="t", runs_dir=runs, cache_root=cache
+        PINS,
+        KPIS,
+        [_client(responder=counting)],
+        run_id="t",
+        runs_dir=runs,
+        cache_root=cache,
+        min_context_chars=200,
     )
     assert len(calls) == first_pass
 
@@ -261,6 +296,7 @@ def test_kill_midway_then_restart_reproduces_the_straight_through_parquet(
         run_id="t",
         runs_dir=clean_runs,
         cache_root=cache,
+        min_context_chars=200,
     )
     clean = (clean_runs / "t" / "results.parquet").read_bytes()
 
@@ -282,6 +318,7 @@ def test_kill_midway_then_restart_reproduces_the_straight_through_parquet(
             run_id="t",
             runs_dir=killed_runs,
             cache_root=cache,
+            min_context_chars=200,
         )
     partial = extract.load_completed(killed_runs / "t" / "raw.jsonl")
     assert 0 < len(partial) < 32  # genuinely interrupted mid-grid
@@ -293,6 +330,7 @@ def test_kill_midway_then_restart_reproduces_the_straight_through_parquet(
         run_id="t",
         runs_dir=killed_runs,
         cache_root=cache,
+        min_context_chars=200,
     )
     assert (killed_runs / "t" / "results.parquet").read_bytes() == clean
 
@@ -353,6 +391,7 @@ def test_rows_are_written_in_a_fixed_order(cache: Path, tmp_path: Path) -> None:
         run_id="t",
         runs_dir=tmp_path / "runs",
         cache_root=cache,
+        min_context_chars=200,
     )
     ordering = list(zip(frame["model"], frame["cell"], frame["ticker"], frame["kpi"], strict=True))
     assert ordering == sorted(ordering)  # sorted regardless of client order
@@ -370,6 +409,7 @@ def test_config_records_grid_and_model_digests(cache: Path, tmp_path: Path) -> N
         run_id="t",
         runs_dir=runs,
         cache_root=cache,
+        min_context_chars=200,
     )
     config = json.loads((runs / "t" / "config.json").read_text())
     assert config["run_id"] == "t"
@@ -420,3 +460,68 @@ def test_build_context_rejects_unknown_kpi_for_bm25() -> None:
         extract.build_context(
             FILING_TEXT, "not_a_kpi", Cell(name="X", context="bm25", structured=False)
         )
+
+
+# --- preflight context guard (ADR-002) ----------------------------------------------
+
+
+STUB_FILING = """\
+Item 8. Financial Statements and Supplementary Data
+The information required by this Item is set forth in our Consolidated Financial
+Statements included elsewhere in this Annual Report on Form 10-K.
+
+Item 9. Changes in and Disagreements with Accountants
+None.
+"""
+
+
+@pytest.fixture
+def stub_cache(tmp_path: Path) -> Path:
+    """A cache where one company's Item 8 is a cross-reference stub."""
+    root = tmp_path / "cache"
+    for pin, body in ((PINS[0], FILING_TEXT), (PINS[1], STUB_FILING)):
+        d = root / str(pin.cik) / pin.accession
+        d.mkdir(parents=True)
+        (d / "text.txt").write_text(body)
+    return root
+
+
+def test_preflight_raises_on_a_stub_context(stub_cache: Path) -> None:
+    with pytest.raises(sections.StatementsSliceError, match="BBB"):
+        extract.preflight_contexts(PINS, stub_cache)
+
+
+def test_preflight_passes_when_every_context_is_real(cache: Path) -> None:
+    extract.preflight_contexts(PINS, cache, min_context_chars=200)  # must not raise
+
+
+def test_run_grid_refuses_to_start_with_a_stub_context(stub_cache: Path, tmp_path: Path) -> None:
+    """The whole point of the guard: no calls at all, rather than fake failures."""
+    calls: list[str] = []
+
+    def counting(prompt: str) -> str:
+        calls.append(prompt)
+        return '{"value": 1}'
+
+    with pytest.raises(sections.StatementsSliceError, match="refusing to run the grid"):
+        extract.run_grid(
+            PINS,
+            KPIS,
+            [_client(responder=counting)],
+            run_id="t",
+            runs_dir=tmp_path / "runs",
+            cache_root=stub_cache,
+        )
+    assert calls == []  # not one call spent on an empty context
+
+
+def test_preflight_reports_every_broken_filing_not_just_the_first(tmp_path: Path) -> None:
+    root = tmp_path / "cache"
+    for pin in PINS:
+        d = root / str(pin.cik) / pin.accession
+        d.mkdir(parents=True)
+        (d / "text.txt").write_text(STUB_FILING)
+    with pytest.raises(sections.StatementsSliceError) as exc:
+        extract.preflight_contexts(PINS, root)
+    assert "AAA" in str(exc.value) and "BBB" in str(exc.value)
+    assert "2 filing(s)" in str(exc.value)

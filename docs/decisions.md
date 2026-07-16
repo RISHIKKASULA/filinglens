@@ -28,3 +28,51 @@ The 10 pairs (XBRL value → matching filing-text line):
 | 8 | MSFT | eps_diluted | 13.64 `EarningsPerShareDiluted` | "Diluted $ 13.64 $ 11.80 $ 9.68" |
 | 9 | MSFT | total_assets | 619,003M `Assets` | "Total assets $ 619,003 $ 512,163" |
 | 10 | MSFT | operating_cash_flow | 136,162M `NetCashProvidedByUsedInOperatingActivities` | "Net cash from operations 136,162 118,548 87,582" |
+
+## ADR-002 — Statements context for incorporation-by-reference filers (§5)
+
+**Status: accepted.** Date: 2026-07-16. Deviates from §5's "Item-heading regex on
+extracted text with whole-doc chunk fallback".
+
+**The bug.** Item 8 is not always where the statements are. NVDA and XOM answer Item 8
+with a one-paragraph cross-reference — "The information required by this Item is set
+forth in our Consolidated Financial Statements and Notes thereto included in this Annual
+Report on Form 10-K" — and file the statements elsewhere: NVDA under Item 15, XOM in a
+Financial Section following Item 16. The slicer was not wrong; the stub genuinely *is*
+Item 8. But cell A therefore handed those two filers a 207- and 706-character context and
+asked for revenue. Every other company got 100k-300k.
+
+Caught by grading the first 20 real rows of the v0.1 grid: all five NVDA items came back
+as `{"value": null, ...}` and were graded `format-failure`. The model was correct to
+return nulls — the figures were not in front of it. The harness was charging its own
+empty context to the model.
+
+**Why it mattered enough to break the freeze.** The failure is silent, deterministic, and
+one-directional: 2 companies x 5 KPIs x 3 models x 2 A-cells = 60 of 600 calls, all fake
+failures, all landing on the section arm — which is one half of the very comparison §5
+exists to make. It would have understated cell A and manufactured an A-vs-B delta out of
+a parsing artifact.
+
+**Why §5's prescribed fallback does not fix it.** The whole-doc fallback only fires when
+the Item 8 heading is *absent*. Here it is present. And head-trimming a whole 10-K to the
+context budget yields its table of contents, so falling back would have failed anyway,
+just less visibly.
+
+**The change.** When the Item 8 slice does not contain a primary statement, locate the
+statements by their own heading wherever they were filed. The discriminator: a real
+statement heading stands alone on its line and is followed within 20 lines by
+thousands-separated figures. This rejects the three decoys observed in the corpus — a
+financial-TOC entry ending in a page number, a statement index ending in dates, and a
+prose cross-reference inside a sentence.
+
+Verified surgical: contexts for the 8 unaffected filers are byte-identical (SHA-256)
+before and after; only NVDA (207 -> 40,000) and XOM (706 -> 40,000) change. All 10
+companies now yield a full 40,000-char context containing every resolvable KPI figure.
+
+**The guard.** `sections.validate_statements` raises below 5,000 chars, and
+`extract.preflight_contexts` runs it over every company before the grid spends a single
+call. A stub now stops the run loudly instead of quietly becoming a model's score. The
+simplest defensible version of "never let this happen again".
+
+**Scope.** Not a new strategy cell and not a retrieval change — cell A still means "the
+statements section, trimmed to budget". This makes it mean that for all 10 filers.
