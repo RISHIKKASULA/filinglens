@@ -88,12 +88,14 @@ def slice_item(text: str, item: str = STATEMENTS_ITEM) -> SectionSlice:
     )
 
 
-def statements_section(text: str, char_budget: int = 60_000) -> SectionSlice:
+def statements_section(text: str, char_budget: int = 40_000) -> SectionSlice:
     """The Item 8 statements section, head-trimmed to a context budget.
 
     The primary statements (income statement, balance sheet, cash flows) sit at the top of
     Item 8, right after its index, so head-trimming keeps them while bounding the prompt.
-    The returned slice's ``text`` is at most ``char_budget`` characters.
+    The default budget stays well inside the frozen num_ctx of 16384 tokens; on the pinned
+    AAPL and MSFT filings all five KPI figures survive the trim. The returned slice's
+    ``text`` is at most ``char_budget`` characters.
     """
     sliced = slice_item(text, STATEMENTS_ITEM)
     if len(sliced.text) > char_budget:
