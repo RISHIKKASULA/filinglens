@@ -326,6 +326,7 @@ source = { editable = "." }
 dependencies = [
     { name = "edgartools" },
     { name = "matplotlib" },
+    { name = "numpy" },
     { name = "ollama" },
     { name = "pandas" },
     { name = "pyarrow" },
@@ -349,6 +350,7 @@ dev = [
 requires-dist = [
     { name = "edgartools", specifier = ">=3.0" },
     { name = "matplotlib", specifier = ">=3.8" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "ollama", specifier = ">=0.4" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "pyarrow", specifier = ">=16.0" },
