@@ -79,9 +79,9 @@ by 15.6% [9.0, 22.3]; schema-constrained (Ollama structured output) beats free-f
 
 ## The failure taxonomy (the centerpiece)
 
-Every one of the 230 incorrect items was hand-labeled against the filing (§7), via the
-`filinglens label` review loop; labels are committed to
-[`runs/v0.1/labels.csv`](runs/v0.1/labels.csv).
+All 230 incorrect items are labeled and committed to
+[`runs/v0.1/labels.csv`](runs/v0.1/labels.csv) — 215 hand-reviewed against the filing via
+the `filinglens label` loop, plus 15 assigned deterministically by the grader's period rule.
 
 | label | n | what it means |
 |---|---|---|
