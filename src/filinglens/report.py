@@ -314,25 +314,29 @@ def _taxonomy_section(items: Sequence[GradedItem]) -> str:
     n_scored = sum(1 for i in items if i.scored)
     lines.append(f"{len(failures)} incorrect / failed items out of {n_scored} scored.")
     lines.append("")
-    lines.append("| label | n | source |")
+    lines.append("| label | n | what the grader can see |")
     lines.append("|---|---|---|")
-    for label in (
-        FailureLabel.WRONG_PERIOD,
-        FailureLabel.WRONG_CONCEPT,
-        FailureLabel.REFUSAL,
-        FailureLabel.FORMAT_FAILURE,
-    ):
+    detectable = {
+        FailureLabel.WRONG_PERIOD: "stated period outside the +/-7 day window",
+        FailureLabel.WRONG_CONCEPT: "currency is not USD — **only** the currency flavour",
+        FailureLabel.REFUSAL: "model declined to answer",
+        FailureLabel.FORMAT_FAILURE: "no readable figure in the output",
+    }
+    for label, how in detectable.items():
         n = sum(1 for i in failures if i.auto_label is label)
-        lines.append(f"| `{label.value}` | {n} | auto (§3) |")
+        lines.append(f"| `{label.value}` | {n} | {how} |")
     unlabelled = sum(1 for i in failures if i.auto_label is None)
-    lines.append(
-        f"| `scale-error` / `hallucination` / other | {unlabelled} | hand-labelled (Day D) |"
-    )
+    lines.append(f"| unlabelled — awaiting the Day D review loop | {unlabelled} | (see below) |")
     lines.append("")
     lines.append(
-        "`scale-error` and `hallucination` cannot be told apart from any other wrong number "
-        "without reading the filing, so the grader records them as incorrect and leaves the "
-        "label to the review loop rather than guessing."
+        "**Read the zeros carefully.** A zero here means the grader's *automatic* test did not "
+        "fire, not that the failure mode is absent. `wrong-concept` counts only non-USD answers; "
+        'a model that grabs the wrong line item — XOM\'s "Sales and other operating revenue" '
+        '(323,905) in place of "Total revenues and other income" (332,238) — is a wrong-concept '
+        "error that lands in the unlabelled bucket, because telling it apart from any other wrong "
+        "number requires reading the filing. The same is true of `scale-error` and "
+        "`hallucination`. Those labels are assigned by hand in the Day D review loop (§7), which "
+        "is why the unlabelled row is large: it is the work, not a gap."
     )
     lines.append("")
     return "\n".join(lines)

@@ -187,9 +187,10 @@ def test_report_without_config_still_renders() -> None:
 
 def test_taxonomy_counts_auto_labels_and_defers_hand_labels() -> None:
     md = report.render(_mixed_run(), n_resamples=N)
-    assert "`refusal` | 4 | auto" in md
-    assert "hand-labelled (Day D)" in md
-    assert "leaves the label to the review loop" in md
+    assert "| `refusal` | 4 |" in md
+    assert "awaiting the Day D review loop" in md
+    assert "Read the zeros carefully" in md
+    assert "not that the failure mode is absent" in md
 
 
 def test_report_with_no_exclusions_says_so() -> None:
