@@ -19,6 +19,8 @@ htmlcov/
 
 # OS
 .DS_Store
+
+# Run artifacts: the committed grid result is results.parquet + config.json + labels.csv
+# (§8, §14). raw.jsonl is the append-only resume log and is redundant with the parquet's
+# raw_text column, so it stays out of the repo (ADR-004).
 runs/*/raw.jsonl
-runs/*/results.parquet
-runs/*/config.json

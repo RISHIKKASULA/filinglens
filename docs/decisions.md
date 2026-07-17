@@ -122,3 +122,43 @@ scale word announces itself instead of silently rescaling a figure.
 **Not changed.** The `dollars -> units` synonym is retained but is provably inert
 (counterfactual re-grade of all 600 rows: identical verdicts). It stays as documentation
 of an observed model phrasing.
+
+## ADR-004 — Which run artifacts are committed (§8, §14)
+
+**Status: accepted.** Date: 2026-07-17. Settles the §14 acceptance item "full grid
+results committed (parquet + report)", which on 2026-07-16 was left open with
+`results.parquet`, `config.json`, and `raw.jsonl` all gitignored.
+
+**The decision.** Commit `runs/v0.1/results.parquet` (18 KB), `runs/v0.1/config.json`, and
+`runs/v0.1/labels.csv`; keep `runs/v0.1/raw.jsonl` gitignored. §14 is binding and requires
+the grid results in the repo, so the parquet goes in. It carries a `raw_text` column with
+every model's verbatim output, so `report.grade_run` regenerates every verdict, CI, and the
+taxonomy from the parquet alone — `docs/eval-report.md` is a build product of it plus
+`labels.csv`, not an independent source. `config.json` pins the run: companies,
+accessions, model digests, and determinism settings, so the committed numbers say exactly
+which weights produced them (§6).
+
+**Why raw.jsonl stays out.** It is the append-only resume log extract.py flushes per call
+(§8's resumability property). Its content is a strict subset of the parquet — the same rows,
+before the fixed-order sort — so committing it would duplicate 293 KB that regenerates
+nothing the parquet cannot. §8's committed-artifacts list is "results.parquet + config.json";
+raw.jsonl is working state, and is treated as such.
+
+**Effect.** The release is reproducible from the repo with no network and no Ollama:
+`filinglens grade v0.1` and `filinglens report v0.1` run entirely off the committed parquet,
+config, and labels, which is the same guarantee CI relies on.
+
+## ADR-005 — §6 unattended-runtime estimate corrected
+
+**Status: accepted.** Date: 2026-07-17. Records a measurement that contradicts a frozen
+number in architecture.md §6 ("Run budget v0.1: ... ~1-2.5 h unattended M4 time").
+
+**The measurement.** On a base M4, the v0.1 grid averaged ~49 s/call, so 600 calls took
+roughly 5-7 h unattended, not 1-2.5 h. The frozen estimate was optimistic by ~3x. The grid
+still ran clean (600 calls, 0 errors, digests pinned); only the time budget was wrong.
+
+**Why not edit §6.** architecture.md is frozen; deviations are recorded here rather than by
+rewriting the spec (per its header governance). The README and eval-report cite the measured
+figure, and this ADR is the pointer. Nothing downstream depended on the estimate — the run
+was unattended and resumable by design — so the correction is documentation, not a code
+change.

@@ -1,0 +1,104 @@
+{
+  "run_id": "v0.1",
+  "companies": [
+    {
+      "ticker": "AAPL",
+      "cik": 320193,
+      "accession": "0000320193-25-000079"
+    },
+    {
+      "ticker": "MSFT",
+      "cik": 789019,
+      "accession": "0000950170-25-100235"
+    },
+    {
+      "ticker": "NVDA",
+      "cik": 1045810,
+      "accession": "0001045810-26-000021"
+    },
+    {
+      "ticker": "KO",
+      "cik": 21344,
+      "accession": "0001628280-26-010047"
+    },
+    {
+      "ticker": "PG",
+      "cik": 80424,
+      "accession": "0000080424-25-000076"
+    },
+    {
+      "ticker": "JNJ",
+      "cik": 200406,
+      "accession": "0000200406-26-000016"
+    },
+    {
+      "ticker": "WMT",
+      "cik": 104169,
+      "accession": "0000104169-26-000055"
+    },
+    {
+      "ticker": "XOM",
+      "cik": 34088,
+      "accession": "0000034088-26-000045"
+    },
+    {
+      "ticker": "COST",
+      "cik": 909832,
+      "accession": "0000909832-25-000101"
+    },
+    {
+      "ticker": "CAT",
+      "cik": 18230,
+      "accession": "0000018230-26-000008"
+    }
+  ],
+  "kpis": [
+    "revenue",
+    "net_income",
+    "eps_diluted",
+    "total_assets",
+    "operating_cash_flow"
+  ],
+  "models": [
+    {
+      "model": "llama3.1:8b-instruct-q4_K_M",
+      "digest": "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e"
+    },
+    {
+      "model": "qwen2.5:7b-instruct-q4_K_M",
+      "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e"
+    },
+    {
+      "model": "llama3.2:3b-instruct-q4_K_M",
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72"
+    }
+  ],
+  "cells": [
+    {
+      "name": "A1",
+      "context": "section",
+      "structured": false
+    },
+    {
+      "name": "A2",
+      "context": "section",
+      "structured": true
+    },
+    {
+      "name": "B1",
+      "context": "bm25",
+      "structured": false
+    },
+    {
+      "name": "B2",
+      "context": "bm25",
+      "structured": true
+    }
+  ],
+  "determinism": {
+    "temperature": 0.0,
+    "seed": 42,
+    "num_ctx": 16384
+  },
+  "planned_calls": 600
+}
