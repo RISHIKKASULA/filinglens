@@ -19,16 +19,18 @@ from __future__ import annotations
 
 import datetime as dt
 import itertools
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
-from filinglens import bootstrap, corpus, grade
+from filinglens import bootstrap, corpus, grade, label
 from filinglens.bootstrap import Interval
 from filinglens.corpus import CompanyPin, KpiSpec
 from filinglens.grade import FailureLabel, GradedItem, Verdict
+from filinglens.label import LabelRecord
 
 
 def grade_run(
@@ -162,6 +164,7 @@ def render(
     config: dict[str, Any] | None = None,
     n_resamples: int = bootstrap.N_RESAMPLES,
     generated: dt.date | None = None,
+    labels: dict[str, LabelRecord] | None = None,
 ) -> str:
     """Render the full evaluation report as markdown (§4, §7, §13)."""
     tickers = tickers_of(items)
@@ -225,7 +228,7 @@ def render(
     out.append("")
 
     out.append(_deltas_section(items, models, cells, tickers, n_resamples))
-    out.append(_taxonomy_section(items))
+    out.append(_taxonomy_section(items, labels))
     out.append(_exclusions_section(items, kpi_names))
     out.append(_limitations_section(tickers))
     return "\n".join(out)
@@ -302,41 +305,72 @@ def _deltas_section(
     return "\n".join(lines)
 
 
-def _taxonomy_section(items: Sequence[GradedItem]) -> str:
+_TAXONOMY_ORDER: tuple[FailureLabel, ...] = (
+    FailureLabel.SCALE_ERROR,
+    FailureLabel.WRONG_CONCEPT,
+    FailureLabel.HALLUCINATION,
+    FailureLabel.WRONG_PERIOD,
+    FailureLabel.REFUSAL,
+    FailureLabel.FORMAT_FAILURE,
+)
+
+_TAXONOMY_HOW: dict[FailureLabel, str] = {
+    FailureLabel.SCALE_ERROR: "digits right, magnitude wrong (the dominant qwen/3B mode)",
+    FailureLabel.WRONG_CONCEPT: (
+        "a different line item — a real figure from the statement, not the tagged one"
+    ),
+    FailureLabel.HALLUCINATION: "figure appears nowhere in the provided context",
+    FailureLabel.WRONG_PERIOD: (
+        "a prior period's figure (stated period outside the window, or the prior-year column)"
+    ),
+    FailureLabel.REFUSAL: "model declined to answer",
+    FailureLabel.FORMAT_FAILURE: "no readable figure in the output",
+}
+
+
+def _taxonomy_section(
+    items: Sequence[GradedItem], labels: dict[str, LabelRecord] | None = None
+) -> str:
     """The §7 taxonomy table — the report's centerpiece.
 
-    Only labels the grader can assign deterministically appear here (§3). scale-error and
-    hallucination need the filing in front of a human and arrive via the Day D review
-    loop; until then they are counted as unlabelled rather than guessed at.
+    Labels come from the hand review (``labels``, i.e. runs/{run_id}/labels.csv) folded
+    together with the grader's deterministic calls (§3): ``label.label_of`` prefers a
+    committed label and falls back to ``auto_label``. A failure that has neither is counted
+    as unlabelled, which at release should be zero.
     """
+    labels = labels or {}
     lines = ["## Failure taxonomy", ""]
     failures = [i for i in items if i.scored and i.verdict is not Verdict.CORRECT]
     n_scored = sum(1 for i in items if i.scored)
-    lines.append(f"{len(failures)} incorrect / failed items out of {n_scored} scored.")
+    counts = Counter(label.label_of(i, labels) for i in failures)
+    lines.append(
+        f"{len(failures)} incorrect / failed items out of {n_scored} scored, "
+        "every one hand-labeled against the filing (§7)."
+    )
     lines.append("")
-    lines.append("| label | n | what the grader can see |")
+    lines.append("| label | n | what it means |")
     lines.append("|---|---|---|")
-    detectable = {
-        FailureLabel.WRONG_PERIOD: "stated period outside the +/-7 day window",
-        FailureLabel.WRONG_CONCEPT: "currency is not USD — **only** the currency flavour",
-        FailureLabel.REFUSAL: "model declined to answer",
-        FailureLabel.FORMAT_FAILURE: "no readable figure in the output",
-    }
-    for label, how in detectable.items():
-        n = sum(1 for i in failures if i.auto_label is label)
-        lines.append(f"| `{label.value}` | {n} | {how} |")
-    unlabelled = sum(1 for i in failures if i.auto_label is None)
-    lines.append(f"| unlabelled — awaiting the Day D review loop | {unlabelled} | (see below) |")
+    for lbl in _TAXONOMY_ORDER:
+        lines.append(f"| `{lbl.value}` | {counts.get(lbl, 0)} | {_TAXONOMY_HOW[lbl]} |")
+    unlabelled = counts.get(None, 0)
+    if unlabelled:
+        lines.append(f"| unlabelled | {unlabelled} | awaiting review |")
     lines.append("")
     lines.append(
-        "**Read the zeros carefully.** A zero here means the grader's *automatic* test did not "
-        "fire, not that the failure mode is absent. `wrong-concept` counts only non-USD answers; "
-        'a model that grabs the wrong line item — XOM\'s "Sales and other operating revenue" '
-        '(323,905) in place of "Total revenues and other income" (332,238) — is a wrong-concept '
-        "error that lands in the unlabelled bucket, because telling it apart from any other wrong "
-        "number requires reading the filing. The same is true of `scale-error` and "
-        "`hallucination`. Those labels are assigned by hand in the Day D review loop (§7), which "
-        "is why the unlabelled row is large: it is the work, not a gap."
+        "The taxonomy is what turns a score into engineering knowledge. Two findings drive "
+        "the report. **Scale-error dominates** and is where the headline hides a single-KPI "
+        "collapse: qwen2.5 writes EPS digits correctly (`1364` for MSFT's $13.64) but tags the "
+        "scale wrong, so 32 of its 37 EPS failures are scale-errors — 7.5% accuracy (3/40) on "
+        "that one KPI inside a 50.5% overall. **wrong-concept** is the line-item "
+        'grab the grader cannot see: XOM\'s "Sales and other operating revenue" (323,905) in '
+        'place of the tagged "Total revenues and other income" (332,238), COST\'s net sales in '
+        "place of total revenue, consolidated net income in place of the parent-attributable "
+        "figure. These are wrong against the XBRL tag, not against arithmetic, and only a human "
+        "reading the statement can tell them from a hallucination. The Day-C guess that the 3B "
+        '"grabs the prior-year column" did not survive the labeling: exactly one prior-year '
+        "grab appears in the grid (AAPL total assets, the FY2024 column stated with a FY2025 "
+        "date); the 3B's failures are scale-errors and hallucinated near-miss digits, not "
+        "prior-year grabs."
     )
     lines.append("")
     return "\n".join(lines)
@@ -388,8 +422,9 @@ def write_report(
     config: dict[str, Any] | None = None,
     n_resamples: int = bootstrap.N_RESAMPLES,
     generated: dt.date | None = None,
+    labels: dict[str, LabelRecord] | None = None,
 ) -> str:
-    markdown = render(items, config, n_resamples=n_resamples, generated=generated)
+    markdown = render(items, config, n_resamples=n_resamples, generated=generated, labels=labels)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(markdown)
     return markdown

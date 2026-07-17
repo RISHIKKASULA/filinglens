@@ -185,12 +185,37 @@ def test_report_without_config_still_renders() -> None:
     assert "## Run provenance" in md
 
 
-def test_taxonomy_counts_auto_labels_and_defers_hand_labels() -> None:
+def test_taxonomy_counts_auto_labels_and_marks_unlabelled_without_hand_labels() -> None:
+    # No labels dict: the 4 REFUSAL items carry an auto label; the 4 INCORRECT items have no
+    # label at all and must show up as unlabelled, not silently vanish.
     md = report.render(_mixed_run(), n_resamples=N)
     assert "| `refusal` | 4 |" in md
-    assert "awaiting the Day D review loop" in md
-    assert "Read the zeros carefully" in md
-    assert "not that the failure mode is absent" in md
+    assert "| unlabelled | 4 | awaiting review |" in md
+    assert "turns a score into engineering knowledge" in md
+
+
+def test_taxonomy_folds_in_hand_labels_and_drops_unlabelled_row() -> None:
+    # A committed label for each incorrect item removes the unlabelled row and is counted
+    # under its §7 bucket (label_of prefers the hand label over auto_label).
+    from filinglens.label import LabelRecord
+
+    items = _mixed_run()
+    labels = {
+        i.model + "|" + i.cell + "|" + i.ticker + "|" + i.kpi: LabelRecord(
+            run_id="t",
+            model=i.model,
+            cell=i.cell,
+            ticker=i.ticker,
+            kpi=i.kpi,
+            label=FailureLabel.SCALE_ERROR,
+            source="hand",
+        )
+        for i in items
+        if i.scored and i.verdict is not Verdict.CORRECT and i.auto_label is None
+    }
+    md = report.render(items, n_resamples=N, labels=labels)
+    assert "| `scale-error` | 4 |" in md
+    assert "unlabelled" not in md
 
 
 def test_report_with_no_exclusions_says_so() -> None:

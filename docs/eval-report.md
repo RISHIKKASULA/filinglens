@@ -4,7 +4,7 @@ How reliably can a local 7-8B LLM extract financial figures from SEC filing text
 
 ## Run provenance
 
-- Generated: 2026-07-16
+- Generated: 2026-07-17
 - Run id: `v0.1`
 - Model: `llama3.1:8b-instruct-q4_K_M` digest `46e0c10c039e0191`
 - Model: `qwen2.5:7b-instruct-q4_K_M` digest `845dbda0ea48ed74`
@@ -78,17 +78,18 @@ Deltas are paired by company: a bootstrap replicate draws a company once and tak
 
 ## Failure taxonomy
 
-230 incorrect / failed items out of 588 scored.
+230 incorrect / failed items out of 588 scored, every one hand-labeled against the filing (§7).
 
-| label | n | what the grader can see |
+| label | n | what it means |
 |---|---|---|
-| `wrong-period` | 15 | stated period outside the +/-7 day window |
-| `wrong-concept` | 0 | currency is not USD — **only** the currency flavour |
+| `scale-error` | 129 | digits right, magnitude wrong (the dominant qwen/3B mode) |
+| `wrong-concept` | 30 | a different line item — a real figure from the statement, not the tagged one |
+| `hallucination` | 55 | figure appears nowhere in the provided context |
+| `wrong-period` | 16 | a prior period's figure (stated period outside the window, or the prior-year column) |
 | `refusal` | 0 | model declined to answer |
 | `format-failure` | 0 | no readable figure in the output |
-| unlabelled — awaiting the Day D review loop | 215 | (see below) |
 
-**Read the zeros carefully.** A zero here means the grader's *automatic* test did not fire, not that the failure mode is absent. `wrong-concept` counts only non-USD answers; a model that grabs the wrong line item — XOM's "Sales and other operating revenue" (323,905) in place of "Total revenues and other income" (332,238) — is a wrong-concept error that lands in the unlabelled bucket, because telling it apart from any other wrong number requires reading the filing. The same is true of `scale-error` and `hallucination`. Those labels are assigned by hand in the Day D review loop (§7), which is why the unlabelled row is large: it is the work, not a gap.
+The taxonomy is what turns a score into engineering knowledge. Two findings drive the report. **Scale-error dominates** and is where the headline hides a single-KPI collapse: qwen2.5 writes EPS digits correctly (`1364` for MSFT's $13.64) but tags the scale wrong, so 32 of its 37 EPS failures are scale-errors — 7.5% accuracy (3/40) on that one KPI inside a 50.5% overall. **wrong-concept** is the line-item grab the grader cannot see: XOM's "Sales and other operating revenue" (323,905) in place of the tagged "Total revenues and other income" (332,238), COST's net sales in place of total revenue, consolidated net income in place of the parent-attributable figure. These are wrong against the XBRL tag, not against arithmetic, and only a human reading the statement can tell them from a hallucination. The Day-C guess that the 3B "grabs the prior-year column" did not survive the labeling: exactly one prior-year grab appears in the grid (AAPL total assets, the FY2024 column stated with a FY2025 date); the 3B's failures are scale-errors and hallucinated near-miss digits, not prior-year grabs.
 
 ## Excluded: no ground truth
 

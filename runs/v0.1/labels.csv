@@ -1,0 +1,231 @@
+run_id,model,cell,ticker,kpi,label,source,note
+v0.1,llama3.1:8b-instruct-q4_K_M,A1,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,A1,XOM,eps_diluted,wrong-period,auto,stated period None outside +/-7d of 2025-12-31
+v0.1,llama3.1:8b-instruct-q4_K_M,A1,XOM,revenue,wrong-period,auto,stated period None outside +/-7d of 2025-12-31
+v0.1,llama3.1:8b-instruct-q4_K_M,A2,AAPL,total_assets,scale-error,hand,wrote 3.59241e+08 scale=millions -> 3.592e+14; digits match truth 3.592e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,A2,COST,revenue,scale-error,hand,wrote 2.75235e+11 scale=millions -> 2.752e+17; digits match truth 2.752e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,A2,PG,total_assets,wrong-period,auto,stated period 2024-06-30 outside +/-7d of 2025-06-30
+v0.1,llama3.1:8b-instruct-q4_K_M,A2,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,A2,XOM,operating_cash_flow,hallucination,hand,wrote 51: figure appears nowhere in the provided context; truth 5.197e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,JNJ,revenue,wrong-concept,hand,wrote 60401: a different line item present in the provided context; truth 9.419e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,KO,revenue,scale-error,hand,wrote 4.7941e+07 scale=millions -> 4.794e+13; digits match truth 4.794e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,PG,net_income,hallucination,hand,wrote 16100: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,WMT,net_income,hallucination,hand,wrote 2.2227e+09: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,B1,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,AAPL,total_assets,wrong-period,hand,value 364980 = prior-year column (2024-09-28); current period stated -> date-rule missed it
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,CAT,total_assets,hallucination,hand,wrote 9.85e+07: figure appears nowhere in the provided context; truth 9.858e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,JNJ,revenue,hallucination,hand,wrote 1.64539e+11: figure appears nowhere in the provided context; truth 9.419e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,KO,revenue,scale-error,hand,wrote 4.7941e+07 scale=millions -> 4.794e+13; digits match truth 4.794e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,PG,net_income,hallucination,hand,wrote 1.61e+09: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,WMT,net_income,hallucination,hand,wrote 2.2227e+09: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.1:8b-instruct-q4_K_M,B2,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,AAPL,eps_diluted,scale-error,hand,wrote 7.46 scale=millions -> 7.46e+06; digits match truth 7.46
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,CAT,eps_diluted,scale-error,hand,wrote 18.81 scale=millions -> 1.881e+07; digits match truth 18.81
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,CAT,revenue,hallucination,hand,wrote 67390: figure appears nowhere in the provided context; truth 6.759e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,COST,eps_diluted,scale-error,hand,wrote 18.21 scale=millions -> 1.821e+07; digits match truth 18.21
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,COST,operating_cash_flow,hallucination,hand,wrote 13090: figure appears nowhere in the provided context; truth 1.334e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,COST,revenue,wrong-concept,hand,wrote 269912: a different line item present in the provided context; truth 2.752e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,JNJ,eps_diluted,scale-error,hand,wrote 11.03 scale=millions -> 1.103e+07; digits match truth 11.03
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,JNJ,total_assets,scale-error,hand,wrote 199210 scale=billions -> 1.992e+14; digits match truth 1.992e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,KO,net_income,hallucination,hand,wrote 13037: figure appears nowhere in the provided context; truth 1.311e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,KO,revenue,hallucination,hand,wrote 47441: figure appears nowhere in the provided context; truth 4.794e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,MSFT,eps_diluted,scale-error,hand,wrote 13.64 scale=millions -> 1.364e+07; digits match truth 13.64
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,MSFT,net_income,scale-error,hand,wrote 1.01832e+08 scale=millions -> 1.018e+14; digits match truth 1.018e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,MSFT,revenue,scale-error,hand,wrote 2.81724e+10 scale=billions -> 2.817e+19; digits match truth 2.817e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,MSFT,total_assets,scale-error,hand,wrote 619003 scale=billions -> 6.19e+14; digits match truth 6.19e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,NVDA,eps_diluted,scale-error,hand,wrote 4.9 scale=millions -> 4.9e+06; digits match truth 4.9
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,PG,eps_diluted,scale-error,hand,wrote 6.51 scale=millions -> 6.51e+06; digits match truth 6.51
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,PG,net_income,hallucination,hand,wrote 16165: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,PG,operating_cash_flow,hallucination,hand,wrote 17117: figure appears nowhere in the provided context; truth 1.782e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,PG,revenue,wrong-period,auto,stated period 2024-06-30 outside +/-7d of 2025-06-30
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,PG,total_assets,scale-error,hand,wrote 125231 scale=billions -> 1.252e+14; digits match truth 1.252e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,WMT,net_income,hallucination,hand,wrote 22170: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,WMT,operating_cash_flow,hallucination,hand,wrote 41650: figure appears nowhere in the provided context; truth 4.156e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,WMT,revenue,scale-error,hand,wrote 7.06413e+08 scale=millions -> 7.064e+14; digits match truth 7.064e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A1,XOM,operating_cash_flow,hallucination,hand,wrote 51569: figure appears nowhere in the provided context; truth 5.197e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,COST,eps_diluted,scale-error,hand,wrote 18.21 scale=millions -> 1.821e+07; digits match truth 18.21
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,COST,operating_cash_flow,hallucination,hand,wrote 13090: figure appears nowhere in the provided context; truth 1.334e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,COST,revenue,wrong-concept,hand,wrote 269912: a different line item present in the provided context; truth 2.752e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,JNJ,net_income,hallucination,hand,wrote 26104: figure appears nowhere in the provided context; truth 2.68e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,JNJ,operating_cash_flow,hallucination,hand,wrote 24300: figure appears nowhere in the provided context; truth 2.453e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,KO,revenue,hallucination,hand,wrote 47441: figure appears nowhere in the provided context; truth 4.794e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,MSFT,net_income,scale-error,hand,wrote 1.01832e+08 scale=millions -> 1.018e+14; digits match truth 1.018e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,MSFT,revenue,scale-error,hand,wrote 2.81724e+08 scale=millions -> 2.817e+14; digits match truth 2.817e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,PG,net_income,hallucination,hand,wrote 16165: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,PG,operating_cash_flow,hallucination,hand,wrote 17117: figure appears nowhere in the provided context; truth 1.782e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,PG,total_assets,scale-error,hand,wrote 125231 scale=billions -> 1.252e+14; digits match truth 1.252e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,WMT,net_income,hallucination,hand,wrote 22170: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,XOM,net_income,hallucination,hand,wrote 29174: figure appears nowhere in the provided context; truth 2.884e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,A2,XOM,operating_cash_flow,hallucination,hand,wrote 51290: figure appears nowhere in the provided context; truth 5.197e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,AAPL,eps_diluted,scale-error,hand,wrote 7.46 scale=millions -> 7.46e+06; digits match truth 7.46
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,AAPL,total_assets,scale-error,hand,wrote 359241 scale=billions -> 3.592e+14; digits match truth 3.592e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,CAT,eps_diluted,scale-error,hand,wrote 18.81 scale=millions -> 1.881e+07; digits match truth 18.81
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,CAT,operating_cash_flow,wrong-concept,hand,wrote 12278: a different line item present in the provided context; truth 1.174e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,CAT,revenue,hallucination,hand,wrote 67490: figure appears nowhere in the provided context; truth 6.759e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,CAT,total_assets,hallucination,hand,wrote 1.24113e+09: figure appears nowhere in the provided context; truth 9.858e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,COST,eps_diluted,scale-error,hand,wrote 18.21 scale=millions -> 1.821e+07; digits match truth 18.21
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,COST,net_income,hallucination,hand,wrote 8009: figure appears nowhere in the provided context; truth 8.099e+09
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,COST,total_assets,scale-error,hand,wrote 7.7099e+06 scale=millions -> 7.71e+12; digits match truth 7.71e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,JNJ,eps_diluted,scale-error,hand,wrote 11.03 scale=millions -> 1.103e+07; digits match truth 11.03
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,JNJ,net_income,scale-error,hand,wrote 26804 scale=billions -> 2.68e+13; digits match truth 2.68e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,JNJ,revenue,wrong-concept,hand,wrote 78057: a different line item present in the provided context; truth 9.419e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,JNJ,total_assets,hallucination,hand,wrote 17000: figure appears nowhere in the provided context; truth 1.992e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,KO,eps_diluted,scale-error,hand,wrote 3.04 scale=millions -> 3.04e+06; digits match truth 3.04
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,KO,operating_cash_flow,hallucination,hand,wrote 7.4e+08: figure appears nowhere in the provided context; truth 7.408e+09
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,KO,revenue,hallucination,hand,wrote 47491: figure appears nowhere in the provided context; truth 4.794e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,KO,total_assets,scale-error,hand,wrote 104816 scale=billions -> 1.048e+14; digits match truth 1.048e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,MSFT,eps_diluted,scale-error,hand,wrote 13.64 scale=millions -> 1.364e+07; digits match truth 13.64
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,MSFT,net_income,scale-error,hand,wrote 1.01832e+08 scale=billions -> 1.018e+17; digits match truth 1.018e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,MSFT,operating_cash_flow,scale-error,hand,wrote 1.36162e+11 scale=billions -> 1.362e+20; digits match truth 1.362e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,MSFT,revenue,scale-error,hand,wrote 2.81724e+10 scale=billions -> 2.817e+19; digits match truth 2.817e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,MSFT,total_assets,scale-error,hand,wrote 6.19003e+11 scale=billions -> 6.19e+20; digits match truth 6.19e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,NVDA,eps_diluted,scale-error,hand,wrote 4.9 scale=millions -> 4.9e+06; digits match truth 4.9
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,NVDA,operating_cash_flow,scale-error,hand,wrote 1.02718e+08 scale=billions -> 1.027e+17; digits match truth 1.027e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,NVDA,revenue,scale-error,hand,wrote 2.15938e+10 scale=billions -> 2.159e+19; digits match truth 2.159e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,PG,net_income,hallucination,hand,wrote 16070: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,PG,operating_cash_flow,wrong-period,auto,stated period 2025-12-31 outside +/-7d of 2025-06-30
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,PG,total_assets,scale-error,hand,wrote 1.25231e+08 scale=billions -> 1.252e+17; digits match truth 1.252e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,WMT,eps_diluted,scale-error,hand,wrote 2.73 scale=millions -> 2.73e+06; digits match truth 2.73
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,WMT,net_income,hallucination,hand,wrote 21690: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,WMT,total_assets,scale-error,hand,wrote 284668 scale=billions -> 2.847e+14; digits match truth 2.847e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,XOM,operating_cash_flow,wrong-period,auto,stated period 2024-12-31 outside +/-7d of 2025-12-31
+v0.1,llama3.2:3b-instruct-q4_K_M,B1,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,AAPL,eps_diluted,scale-error,hand,wrote 7.46 scale=millions -> 7.46e+06; digits match truth 7.46
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,AAPL,total_assets,scale-error,hand,wrote 359241 scale=billions -> 3.592e+14; digits match truth 3.592e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,CAT,operating_cash_flow,wrong-concept,hand,wrote 12278: a different line item present in the provided context; truth 1.174e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,CAT,revenue,hallucination,hand,wrote 6.7489e+10: figure appears nowhere in the provided context; truth 6.759e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,CAT,total_assets,hallucination,hand,wrote 1.24113e+08: figure appears nowhere in the provided context; truth 9.858e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,COST,eps_diluted,scale-error,hand,wrote 18.21 scale=millions -> 1.821e+07; digits match truth 18.21
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,COST,net_income,hallucination,hand,wrote 8009: figure appears nowhere in the provided context; truth 8.099e+09
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,COST,total_assets,scale-error,hand,wrote 7.7099e+06 scale=millions -> 7.71e+12; digits match truth 7.71e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,JNJ,eps_diluted,scale-error,hand,wrote 11.03 scale=millions -> 1.103e+07; digits match truth 11.03
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,JNJ,net_income,scale-error,hand,wrote 26804 scale=billions -> 2.68e+13; digits match truth 2.68e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,JNJ,operating_cash_flow,hallucination,hand,wrote 24000: figure appears nowhere in the provided context; truth 2.453e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,JNJ,revenue,hallucination,hand,wrote 1.9921e+11: figure appears nowhere in the provided context; truth 9.419e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,JNJ,total_assets,hallucination,hand,wrote 17000: figure appears nowhere in the provided context; truth 1.992e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,KO,eps_diluted,scale-error,hand,wrote 3.04 scale=millions -> 3.04e+06; digits match truth 3.04
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,KO,net_income,hallucination,hand,wrote 130: figure appears nowhere in the provided context; truth 1.311e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,KO,operating_cash_flow,hallucination,hand,wrote 7.4e+08: figure appears nowhere in the provided context; truth 7.408e+09
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,KO,revenue,hallucination,hand,wrote 47491: figure appears nowhere in the provided context; truth 4.794e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,KO,total_assets,scale-error,hand,wrote 104816 scale=billions -> 1.048e+14; digits match truth 1.048e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,MSFT,eps_diluted,scale-error,hand,wrote 13.64 scale=millions -> 1.364e+07; digits match truth 13.64
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,MSFT,net_income,scale-error,hand,wrote 1.01832e+08 scale=billions -> 1.018e+17; digits match truth 1.018e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,MSFT,revenue,scale-error,hand,wrote 2.81724e+10 scale=billions -> 2.817e+19; digits match truth 2.817e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,MSFT,total_assets,scale-error,hand,wrote 6.19003e+10 scale=billions -> 6.19e+19; digits match truth 6.19e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,NVDA,eps_diluted,scale-error,hand,wrote 4.9 scale=millions -> 4.9e+06; digits match truth 4.9
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,NVDA,operating_cash_flow,scale-error,hand,wrote 1.02718e+08 scale=millions -> 1.027e+14; digits match truth 1.027e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,PG,net_income,hallucination,hand,wrote 16070: figure appears nowhere in the provided context; truth 1.597e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,PG,operating_cash_flow,wrong-period,auto,stated period 2025-12-31 outside +/-7d of 2025-06-30
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,PG,revenue,hallucination,hand,wrote 84100: figure appears nowhere in the provided context; truth 8.428e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,PG,total_assets,scale-error,hand,wrote 1.25231e+08 scale=billions -> 1.252e+17; digits match truth 1.252e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,WMT,net_income,hallucination,hand,wrote 21690: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,WMT,total_assets,scale-error,hand,wrote 284668 scale=billions -> 2.847e+14; digits match truth 2.847e+11
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,XOM,operating_cash_flow,wrong-period,auto,stated period 2024-12-31 outside +/-7d of 2025-12-31
+v0.1,llama3.2:3b-instruct-q4_K_M,B2,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,AAPL,eps_diluted,scale-error,hand,wrote 7.46e+08 scale=millions -> 7.46e+14; digits match truth 7.46
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,CAT,eps_diluted,scale-error,hand,wrote 1881 scale=thousands -> 1.881e+06; digits match truth 18.81
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,CAT,operating_cash_flow,scale-error,hand,wrote 11739 scale=thousands -> 1.174e+07; digits match truth 1.174e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,CAT,revenue,wrong-period,auto,stated period 2026-01-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,COST,eps_diluted,scale-error,hand,wrote 1.821e+06 scale=thousands -> 1.821e+09; digits match truth 18.21
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,COST,operating_cash_flow,scale-error,hand,wrote 13335 scale=thousands -> 1.334e+07; digits match truth 1.334e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,COST,total_assets,scale-error,hand,wrote 7.7099e+10 scale=millions -> 7.71e+16; digits match truth 7.71e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,JNJ,eps_diluted,scale-error,hand,wrote 1103 scale=thousands -> 1.103e+06; digits match truth 11.03
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,JNJ,net_income,scale-error,hand,wrote 2.6804e+10 scale=millions -> 2.68e+16; digits match truth 2.68e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,JNJ,operating_cash_flow,wrong-period,auto,stated period 2026-01-31 outside +/-7d of 2025-12-28
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,KO,eps_diluted,hallucination,hand,wrote 1.3107e+10: figure appears nowhere in the provided context; truth 3.04
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,MSFT,eps_diluted,scale-error,hand,wrote 1364 scale=thousands -> 1.364e+06; digits match truth 13.64
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,NVDA,eps_diluted,scale-error,hand,wrote 490 scale=thousands -> 4.9e+05; digits match truth 4.9
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,NVDA,total_assets,scale-error,hand,wrote 2.06803e+11 scale=millions -> 2.068e+17; digits match truth 2.068e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,PG,eps_diluted,scale-error,hand,wrote 651 scale=thousands -> 6.51e+05; digits match truth 6.51
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,PG,net_income,wrong-concept,hand,wrote 16065: a different line item present in the provided context; truth 1.597e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,PG,operating_cash_flow,scale-error,hand,wrote 17817 scale=thousands -> 1.782e+07; digits match truth 1.782e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,WMT,net_income,wrong-concept,hand,wrote 22270: a different line item present in the provided context; truth 2.189e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,WMT,operating_cash_flow,scale-error,hand,wrote 41565 scale=thousands -> 4.156e+07; digits match truth 4.156e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,XOM,eps_diluted,scale-error,hand,wrote 670 scale=thousands -> 6.7e+05; digits match truth 6.7
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,XOM,net_income,wrong-concept,hand,wrote 29764: a different line item present in the provided context; truth 2.884e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,XOM,operating_cash_flow,scale-error,hand,wrote 51970 scale=thousands -> 5.197e+07; digits match truth 5.197e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A1,XOM,revenue,scale-error,hand,wrote 3.32238e+11 scale=millions -> 3.322e+17; digits match truth 3.322e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,AAPL,eps_diluted,scale-error,hand,wrote 7.46 scale=millions -> 7.46e+06; digits match truth 7.46
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,CAT,eps_diluted,scale-error,hand,wrote 1881 scale=thousands -> 1.881e+06; digits match truth 18.81
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,CAT,operating_cash_flow,scale-error,hand,wrote 11739 scale=thousands -> 1.174e+07; digits match truth 1.174e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,CAT,revenue,wrong-period,auto,stated period 2026-01-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,COST,eps_diluted,scale-error,hand,wrote 1821 scale=thousands -> 1.821e+06; digits match truth 18.21
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,COST,operating_cash_flow,scale-error,hand,wrote 13335 scale=thousands -> 1.334e+07; digits match truth 1.334e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,JNJ,eps_diluted,scale-error,hand,wrote 1103 scale=thousands -> 1.103e+06; digits match truth 11.03
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,JNJ,net_income,scale-error,hand,wrote 2.6804e+10 scale=millions -> 2.68e+16; digits match truth 2.68e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,JNJ,operating_cash_flow,scale-error,hand,wrote 24530 scale=thousands -> 2.453e+07; digits match truth 2.453e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,KO,eps_diluted,scale-error,hand,wrote 304 scale=thousands -> 3.04e+05; digits match truth 3.04
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,MSFT,eps_diluted,scale-error,hand,wrote 1364 scale=thousands -> 1.364e+06; digits match truth 13.64
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,MSFT,revenue,scale-error,hand,wrote 281724 scale=thousands -> 2.817e+08; digits match truth 2.817e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,NVDA,eps_diluted,scale-error,hand,wrote 490 scale=thousands -> 4.9e+05; digits match truth 4.9
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,PG,eps_diluted,scale-error,hand,wrote 651 scale=thousands -> 6.51e+05; digits match truth 6.51
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,WMT,eps_diluted,scale-error,hand,wrote 273 scale=thousands -> 2.73e+05; digits match truth 2.73
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,WMT,operating_cash_flow,scale-error,hand,wrote 41565 scale=thousands -> 4.156e+07; digits match truth 4.156e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,WMT,revenue,wrong-concept,hand,wrote 713163: a different line item present in the provided context; truth 7.064e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,XOM,net_income,wrong-concept,hand,wrote 29764: a different line item present in the provided context; truth 2.884e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,XOM,operating_cash_flow,scale-error,hand,wrote 51970 scale=thousands -> 5.197e+07; digits match truth 5.197e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,A2,XOM,revenue,scale-error,hand,wrote 332238 scale=thousands -> 3.322e+08; digits match truth 3.322e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,AAPL,eps_diluted,scale-error,hand,wrote 74600 scale=cents -> 746; digits match truth 7.46
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,AAPL,revenue,scale-error,hand,wrote 4.16161e+11 scale=billions -> 4.162e+20; digits match truth 4.162e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,AAPL,total_assets,scale-error,hand,wrote 3.59241e+11 scale=billions -> 3.592e+20; digits match truth 3.592e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,CAT,eps_diluted,wrong-period,auto,stated period 2026-01-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,CAT,operating_cash_flow,hallucination,hand,wrote 1.2278e+10: figure appears nowhere in the provided context; truth 1.174e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,CAT,total_assets,scale-error,hand,wrote 9.8585e+10 scale=billions -> 9.858e+19; digits match truth 9.858e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,COST,operating_cash_flow,scale-error,hand,wrote 13335 scale=thousands -> 1.334e+07; digits match truth 1.334e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,COST,revenue,wrong-concept,hand,wrote 269912: a different line item present in the provided context; truth 2.752e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,COST,total_assets,scale-error,hand,wrote 7.7099e+10 scale=billions -> 7.71e+19; digits match truth 7.71e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,JNJ,eps_diluted,scale-error,hand,wrote 1103 scale=thousands -> 1.103e+06; digits match truth 11.03
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,JNJ,revenue,hallucination,hand,wrote 1.64539e+11: figure appears nowhere in the provided context; truth 9.419e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,JNJ,total_assets,hallucination,hand,wrote 68000: figure appears nowhere in the provided context; truth 1.992e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,KO,eps_diluted,scale-error,hand,wrote 30400 scale=cents -> 304; digits match truth 3.04
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,MSFT,eps_diluted,scale-error,hand,wrote 1364 scale=thousands -> 1.364e+06; digits match truth 13.64
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,MSFT,operating_cash_flow,scale-error,hand,wrote 1.36162e+11 scale=millions -> 1.362e+17; digits match truth 1.362e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,MSFT,total_assets,scale-error,hand,wrote 6.19003e+11 scale=billions -> 6.19e+20; digits match truth 6.19e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,NVDA,eps_diluted,scale-error,hand,wrote 490 scale=thousands -> 4.9e+05; digits match truth 4.9
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,NVDA,total_assets,scale-error,hand,wrote 2.06803e+11 scale=billions -> 2.068e+20; digits match truth 2.068e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,PG,eps_diluted,hallucination,hand,wrote 683: figure appears nowhere in the provided context; truth 6.51
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,PG,revenue,hallucination,hand,wrote 160650: figure appears nowhere in the provided context; truth 8.428e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,PG,total_assets,scale-error,hand,wrote 1.25231e+11 scale=billions -> 1.252e+20; digits match truth 1.252e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,WMT,eps_diluted,scale-error,hand,wrote 2730 scale=thousands -> 2.73e+06; digits match truth 2.73
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,WMT,net_income,wrong-concept,hand,wrote 22270: a different line item present in the provided context; truth 2.189e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,WMT,total_assets,scale-error,hand,wrote 2.84668e+11 scale=billions -> 2.847e+20; digits match truth 2.847e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,XOM,eps_diluted,scale-error,hand,wrote 670 scale=thousands -> 6.7e+05; digits match truth 6.7
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,XOM,operating_cash_flow,wrong-period,auto,stated period 2024-12-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,B1,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,AAPL,eps_diluted,scale-error,hand,wrote 746 scale=thousands -> 7.46e+05; digits match truth 7.46
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,AAPL,operating_cash_flow,scale-error,hand,wrote 111482 scale=thousands -> 1.115e+08; digits match truth 1.115e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,AAPL,total_assets,scale-error,hand,wrote 3.59241e+11 scale=millions -> 3.592e+17; digits match truth 3.592e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,CAT,eps_diluted,wrong-period,auto,stated period 2026-01-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,CAT,operating_cash_flow,wrong-concept,hand,wrote 12278: a different line item present in the provided context; truth 1.174e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,CAT,total_assets,scale-error,hand,wrote 98585 scale=thousands -> 9.858e+07; digits match truth 9.858e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,COST,eps_diluted,scale-error,hand,"wrote 1821 scale=units -> 1,821; digits match truth 18.21"
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,COST,operating_cash_flow,scale-error,hand,wrote 13335 scale=thousands -> 1.334e+07; digits match truth 1.334e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,COST,revenue,wrong-concept,hand,wrote 269912: a different line item present in the provided context; truth 2.752e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,JNJ,eps_diluted,scale-error,hand,wrote 11.03 scale=millions -> 1.103e+07; digits match truth 11.03
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,JNJ,revenue,hallucination,hand,wrote 1.64539e+11: figure appears nowhere in the provided context; truth 9.419e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,JNJ,total_assets,hallucination,hand,wrote 175000: figure appears nowhere in the provided context; truth 1.992e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,KO,eps_diluted,scale-error,hand,wrote 304 scale=thousands -> 3.04e+05; digits match truth 3.04
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,MSFT,eps_diluted,scale-error,hand,wrote 1364 scale=thousands -> 1.364e+06; digits match truth 13.64
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,MSFT,operating_cash_flow,scale-error,hand,wrote 136162 scale=thousands -> 1.362e+08; digits match truth 1.362e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,NVDA,eps_diluted,wrong-concept,hand,wrote 120067: a different line item present in the provided context; truth 4.9
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,PG,eps_diluted,scale-error,hand,wrote 651 scale=thousands -> 6.51e+05; digits match truth 6.51
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,PG,revenue,hallucination,hand,wrote 160650: figure appears nowhere in the provided context; truth 8.428e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,PG,total_assets,scale-error,hand,wrote 1.25231e+11 scale=millions -> 1.252e+17; digits match truth 1.252e+11
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,WMT,eps_diluted,scale-error,hand,wrote 27300 scale=thousands -> 2.73e+07; digits match truth 2.73
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,WMT,net_income,hallucination,hand,wrote 22370: figure appears nowhere in the provided context; truth 2.189e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,XOM,eps_diluted,scale-error,hand,wrote 670 scale=thousands -> 6.7e+05; digits match truth 6.7
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,XOM,net_income,wrong-concept,hand,wrote 29764: a different line item present in the provided context; truth 2.884e+10
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,XOM,operating_cash_flow,wrong-period,auto,stated period 2024-12-31 outside +/-7d of 2025-12-31
+v0.1,qwen2.5:7b-instruct-q4_K_M,B2,XOM,revenue,wrong-concept,hand,wrote 323905: a different line item present in the provided context; truth 3.322e+11
