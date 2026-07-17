@@ -30,8 +30,11 @@ def test_normalize_value_applies_every_frozen_scale(scale: str, expected: float)
     assert normalize.normalize_value(extraction) == expected
 
 
-def test_scale_factors_are_the_frozen_vocabulary() -> None:
-    assert set(normalize.SCALE_FACTORS) == {"units", "thousands", "millions", "billions"}
+def test_scale_factors_cover_the_frozen_enum_plus_cents() -> None:
+    # §3's four frozen values are what the schema offers; cents is understood on input
+    # only, because free-form models write it and meant it (ADR-003).
+    assert set(normalize.FROZEN_SCALE_ENUM) <= set(normalize.SCALE_FACTORS)
+    assert set(normalize.SCALE_FACTORS) == {"cents", "units", "thousands", "millions", "billions"}
 
 
 # --- number parsing, incl. the parentheses-negative convention (§3) ------------------
@@ -91,10 +94,18 @@ def test_parse_scale_maps_synonyms(raw: str, expected: str) -> None:
     assert normalize.parse_scale(raw) == expected
 
 
-def test_parse_scale_falls_back_when_unrecognized() -> None:
-    assert normalize.parse_scale("furlongs") == "units"
+def test_parse_scale_absent_falls_back_to_units() -> None:
+    # No scale stated: the corpus prints figures as-is, so silence means as-printed.
     assert normalize.parse_scale(None) == "units"
-    assert normalize.parse_scale("furlongs", fallback="millions") == "millions"
+    assert normalize.parse_scale("") == "units"
+    assert normalize.parse_scale(None, fallback="millions") == "millions"
+
+
+def test_parse_scale_stated_but_unreadable_returns_none() -> None:
+    # ADR-003: a scale the model stated and we cannot read must not become a guess.
+    # Silently calling this "units" is exactly how "273 cents" graded as $273.
+    assert normalize.parse_scale("furlongs") is None
+    assert normalize.parse_scale("per share") is None
 
 
 # --- date parsing -------------------------------------------------------------------
@@ -236,3 +247,50 @@ def test_parse_output_falls_through_to_a_later_usable_object() -> None:
     result = normalize.parse_output(raw)
     assert result.extraction is not None
     assert result.extraction.value == 416_161.0
+
+
+# --- cents (ADR-003) ----------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [("cents", "cents"), ("Cents", "cents"), ("cent", "cents"), ("in cents", "cents")],
+)
+def test_parse_scale_reads_cents(raw: str, expected: str) -> None:
+    assert normalize.parse_scale(raw) == expected
+
+
+def test_cents_normalizes_by_dividing_by_one_hundred() -> None:
+    # "273 cents" is $2.73 — the real qwen answer that the units fallback graded as $273.
+    assert normalize.normalize_value(Extraction(value=273.0, scale="cents", currency="USD")) == 2.73
+
+
+def test_cents_is_understood_on_input_but_not_offered_in_the_frozen_enum() -> None:
+    # §3 freezes the enum to four values and the schema must keep asking for those; cents
+    # is an input tolerance, not a fifth choice (ADR-003).
+    assert normalize.FROZEN_SCALE_ENUM == ("units", "thousands", "millions", "billions")
+    assert "cents" in normalize.SCALE_FACTORS
+    assert "cents" not in normalize.FROZEN_SCALE_ENUM
+
+
+def test_parse_output_reads_a_cents_answer() -> None:
+    raw = '{"kpi": "eps_diluted", "value": 273, "scale": "cents", "currency": "USD"}'
+    result = normalize.parse_output(raw)
+    assert result.extraction is not None
+    assert result.extraction.scale == "cents"
+    assert normalize.normalize_value(result.extraction) == 2.73
+
+
+def test_parse_output_flags_an_unreadable_stated_scale() -> None:
+    raw = '{"kpi": "revenue", "value": 100, "scale": "furlongs", "currency": "USD"}'
+    result = normalize.parse_output(raw)
+    assert result.extraction is None
+    assert result.is_format_failure
+    assert result.unreadable_scale == "furlongs"  # kept, so a human can see what it wrote
+
+
+def test_parse_output_missing_scale_still_defaults_to_units() -> None:
+    # The absent case is unchanged: silence means as-printed.
+    result = normalize.parse_output('{"value": 100, "currency": "USD"}')
+    assert result.extraction is not None
+    assert result.extraction.scale == "units"

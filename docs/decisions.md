@@ -76,3 +76,49 @@ simplest defensible version of "never let this happen again".
 
 **Scope.** Not a new strategy cell and not a retrieval change — cell A still means "the
 statements section, trimmed to budget". This makes it mean that for all 10 filers.
+
+## ADR-003 — `cents` is understood on input (§3)
+
+**Status: accepted.** Date: 2026-07-16. Extends §3's scale normalization. Approved by
+Rishik after reviewing the affected rows.
+
+**The bug.** `parse_scale` fell back to `units` for any scale string it did not
+recognise. `cents` was not in the table, so a model answering
+`{"value": 273, "scale": "cents"}` — meaning $2.73 — was graded as $273. A 100x error,
+introduced by the grader, silently, on an answer that was correct.
+
+Found while auditing a different question: whether the `dollars -> units` synonym was
+leniency. It was not — it changes zero verdicts, because the `units` fallback already
+produced that answer, making the synonym dead code. But the same fallback was swallowing
+`cents`, which is not equivalent to units at all.
+
+**The change.** `cents` normalizes at 0.01. It is understood on *input* only: §3's frozen
+enum stays `{units, thousands, millions, billions}` and prompts.py keeps offering exactly
+those four, so the schema-constrained cells are unaffected. All five `cents` answers came
+from the free-form arm, where the model writes what it likes and cents is a real scale for
+a per-share figure — the one scale below units, and the only one a filer would ever use
+for EPS.
+
+**Effect: 2 of 600 rows flip to correct**, both EPS, both qwen2.5:7b:
+
+| row | model said | means | XBRL | before | after |
+|---|---|---|---|---|---|
+| WMT eps_diluted A1 | 273 cents | $2.73 | $2.73 | incorrect | **correct** |
+| COST eps_diluted B1 | 1821 cents | $18.21 | $18.21 | incorrect | **correct** |
+
+The other three `cents` rows stay incorrect on their own merits: AAPL 74600c = $746.00 vs
+$7.46, KO 30400c = $304.00 vs $3.04, PG 683c = $6.83 vs $6.51. The fix credits correct
+answers and nothing else.
+
+**The deeper fix.** `parse_scale` now distinguishes two absences that it previously
+conflated. A *missing* scale still falls back to `units` — the corpus prints figures as
+issued, so silence means as-printed, and that is documented and safe. A *stated but
+unreadable* scale now returns None and grades as `format-failure`, carrying the raw string
+so the review loop can see what the model wrote. Substituting a guess for the one field
+that multiplies the answer is what let this hide for a whole grid. Zero rows in the v0.1
+run take that path, so the stricter rule costs nothing here; it exists so the next unknown
+scale word announces itself instead of silently rescaling a figure.
+
+**Not changed.** The `dollars -> units` synonym is retained but is provably inert
+(counterfactual re-grade of all 600 rows: identical verdicts). It stays as documentation
+of an observed model phrasing.

@@ -20,13 +20,23 @@ from typing import Any
 
 from pydantic import BaseModel
 
-# Frozen scale vocabulary (§3). value x factor -> absolute units.
+# Scale vocabulary. value x factor -> absolute units.
+#
+# §3 freezes the enum to {units, thousands, millions, billions} and the structured cells
+# enforce exactly that. But the free-form arm gets whatever the model writes, and models
+# write "cents" — a real scale for a per-share figure, and the one scale below units.
+# Honouring it is ADR-003; the alternative was grading "273 cents" as $273.
 SCALE_FACTORS: dict[str, float] = {
+    "cents": 0.01,
     "units": 1.0,
     "thousands": 1e3,
     "millions": 1e6,
     "billions": 1e9,
 }
+
+# The §3 enum, for the structured-output schema. `cents` is understood on input but never
+# offered as a choice: prompts.py must keep asking for the four frozen values.
+FROZEN_SCALE_ENUM: tuple[str, ...] = ("units", "thousands", "millions", "billions")
 
 # Words a model may use in the `scale` field instead of the enum. Mapped rather than
 # rejected: the figure is right and the intent is unambiguous, so rejecting it would be a
@@ -48,6 +58,8 @@ _SCALE_PATTERNS: tuple[tuple[str, str], ...] = (
     ("thousands", "thousands"),
     ("thousand", "thousands"),
     ("k", "thousands"),
+    ("cents", "cents"),
+    ("cent", "cents"),
     ("units", "units"),
     ("unit", "units"),
     ("ones", "units"),
@@ -106,10 +118,15 @@ class ParseResult(BaseModel):
     Exactly one of ``extraction`` / ``refused`` / neither is meaningful: an extraction
     means a figure was recovered; ``refused`` means the model declined; neither means the
     output was unparseable (a `format-failure` in §4 terms).
+
+    ``unreadable_scale`` records a scale string the model stated but we could not
+    interpret. It is kept rather than discarded so the review loop can see what the model
+    actually wrote — that string is how the `cents` bug was found (ADR-003).
     """
 
     extraction: Extraction | None = None
     refused: bool = False
+    unreadable_scale: str | None = None
 
     @property
     def is_format_failure(self) -> bool:
@@ -146,22 +163,33 @@ def parse_number(raw: Any) -> float | None:
     return value
 
 
-def parse_scale(raw: Any, fallback: str = "units") -> str:
-    """Map a model's `scale` field onto the frozen enum, tolerating common synonyms.
+def parse_scale(raw: Any, fallback: str = "units") -> str | None:
+    """Map a model's `scale` field onto a known scale.
 
-    Handles both the bare enum and the free text models actually emit ("in millions",
+    Handles the bare enum and the free text models actually emit ("in millions",
     "USD millions", "$ in thousands"), scanning _SCALE_PATTERNS in its declared order so
     the magnitude wins over an incidental currency word.
+
+    Two different absences, two different answers (ADR-003):
+
+    - **No scale given** -> ``fallback`` (``units``). The corpus reports figures as
+      printed, so silence means as-printed. Documented and safe.
+    - **A scale given that we cannot read** -> ``None``. Silently calling it ``units``
+      is how "273 cents" was graded as $273 for a whole grid: the model stated a scale,
+      we could not interpret it, and we substituted a guess that looked like an answer.
+      Returning None makes the caller decide instead of hiding a 100x error.
     """
     if not isinstance(raw, str):
         return fallback
     key = raw.strip().lower().rstrip(".")
+    if not key:
+        return fallback
     if key in SCALE_FACTORS:
         return key
     for word, canonical in _SCALE_PATTERNS:
         if re.search(rf"\b{re.escape(word)}\b", key):
             return canonical
-    return fallback
+    return None  # stated, but unreadable — never guess
 
 
 def parse_date(raw: Any) -> dt.date | None:
@@ -221,6 +249,10 @@ def parse_output(text: str) -> ParseResult:
     field the verdict turns on. Missing `scale` defaults to ``units`` (an unstated scale
     means the figure is as-printed); missing `currency` defaults to USD (the corpus is
     US filers reporting in USD, so absence is not evidence of a foreign currency).
+
+    A *stated* scale we cannot read is different: the answer is unusable rather than
+    absent, so ``unreadable_scale`` is set and the item grades as a format-failure. The
+    grader must never invent the one field that multiplies the answer (ADR-003).
     """
     if not text or not text.strip():
         return ParseResult(refused=False)  # empty output is a format-failure, not a refusal
@@ -231,11 +263,14 @@ def parse_output(text: str) -> ParseResult:
         value = parse_number(obj["value"])
         if value is None:
             continue
+        scale = parse_scale(obj.get("scale"))
+        if scale is None:
+            return ParseResult(unreadable_scale=str(obj.get("scale")))
         return ParseResult(
             extraction=Extraction(
                 kpi=obj.get("kpi") if isinstance(obj.get("kpi"), str) else None,
                 value=value,
-                scale=parse_scale(obj.get("scale")),
+                scale=scale,
                 currency=str(obj.get("currency") or "USD").strip().upper(),
                 fiscal_period_end=parse_date(obj.get("fiscal_period_end")),
             )
