@@ -34,7 +34,21 @@ coverage to gate` · `ci: finalize workflow` · `docs: write README with measure
 - [x] Day C: normalization + XBRL grading (§3 tolerances)
 - [x] Day C: v0.1 grid — 600 calls, 0 errors, all 3 models, digests pinned
 - [x] Day C: cluster-bootstrap CIs + report generation → `docs/eval-report.md`
-- [ ] Day D
+- [x] Day D: failure-label review loop (`filinglens label`) + all 230 incorrect items
+  hand-labeled → `runs/v0.1/labels.csv` (§7 taxonomy complete)
+- [x] Day D: coverage to gate (294 tests, 98.7% core, §10 fixture E2E) + CI green
+- [x] Day D: §14 grid artifacts committed (parquet + config + labels), ADR-004/005
+- [x] Day D: README with measured results + honest framing
+- [x] Day D: release v0.1.0 (tag + CHANGELOG + notes)
+
+## Failure taxonomy (Day D, hand-labeled, §7)
+
+230 incorrect items, every one labeled against the filing (`runs/v0.1/labels.csv`):
+scale-error 129 · hallucination 55 · wrong-concept 30 · wrong-period 16 (15 auto by date,
+1 prior-year column). Two findings: scale-error dominates and hides qwen's EPS collapse
+(32 of its 37 EPS failures are scale-tagging); wrong-concept is the line-item grab the
+value-only grader cannot see (XOM 323,905 vs 332,238). The Day-C "3B grabs the prior-year
+column" guess did not survive — exactly one prior-year grab in the grid.
 
 ## Measured v0.1 result (2026-07-16)
 
