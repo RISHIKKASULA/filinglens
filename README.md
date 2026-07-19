@@ -124,12 +124,15 @@ failures are scale-errors and hallucinated near-miss digits.
 
 ## Reproducing
 
-The v0.1 results are committed (`runs/v0.1/results.parquet` + `config.json` + `labels.csv`),
-so grading, the report, and CI reproduce from the repo with **no network and no Ollama**:
+The v0.1 grid is committed (`runs/v0.1/results.parquet` + `config.json` + `labels.csv`).
+Verdicts, CIs, and the report regenerate deterministically from the committed raw outputs;
+ground-truth facts re-fetch once from EDGAR against the pinned accessions; CI runs fully
+offline on fixtures.
 
 ```bash
 uv sync
-uv run filinglens grade v0.1     # grade the committed grid against XBRL
+uv run filinglens fetch          # one-time: cache the pinned XBRL companyfacts from EDGAR
+uv run filinglens grade v0.1     # grade the committed grid against XBRL (offline after fetch)
 uv run filinglens report v0.1    # regenerate docs/eval-report.md (taxonomy from labels.csv)
 uv run pytest                    # 294 tests, ≥85% core coverage, fixture E2E
 ```
