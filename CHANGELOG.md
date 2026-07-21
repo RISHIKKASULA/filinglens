@@ -47,8 +47,9 @@ scale-error 129 · hallucination 55 · wrong-concept 30 · wrong-period 16.
 ### Notes
 
 - The v0.1 grid results are committed (`runs/v0.1/results.parquet` + `config.json` +
-  `labels.csv`), so grading, the report, and CI reproduce with no network and no Ollama
-  (ADR-004).
+  `labels.csv`), so verdicts, CIs, and the report regenerate deterministically with no
+  Ollama and no model calls (ADR-004). Ground-truth facts re-fetch once from EDGAR against
+  the pinned accessions; CI runs offline on fixtures.
 - **87.8% is headline-figure extraction with the statements already in context.** It is
   **not** comparable to FinanceBench's reasoning-question results and does not beat
   FinanceBench or any frontier model. FinanceBench (arXiv 2311.11944) is cited only as the

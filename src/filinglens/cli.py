@@ -1,4 +1,7 @@
-"""Command-line entry point: filinglens fetch | sanity | run | grade | label | report."""
+"""Command-line entry point: filinglens fetch | sanity | grade | label | report.
+
+§8 also lists a ``run`` subcommand; it was never exposed. See ADR-007.
+"""
 
 import argparse
 import sys

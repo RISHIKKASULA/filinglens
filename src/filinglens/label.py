@@ -8,7 +8,8 @@ for a stated period outside the window, `wrong-concept` for a non-USD currency, 
 different line item grabbed from the same statement, a figure that appears nowhere in the
 context — needs the filing in front of a human. This module is that pass.
 
-Labels live in ``runs/{run_id}/labels.csv`` (committed, §8) and cover **every** incorrect
+Labels live in ``runs/{run_id}/labels.csv`` (committed; run-scoped per ADR-006, which
+records the deviation from §7/§8's root-level ``runs/labels.csv``) and cover **every** incorrect
 item, not just the hand-reviewed ones: a row per failure, carrying its final §7 label, its
 source (``auto`` from the grader or ``hand`` from this loop), and a short evidence note so
 the assignment can be audited without re-deriving it. report.py reads this file as the

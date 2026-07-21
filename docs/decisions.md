@@ -144,9 +144,12 @@ before the fixed-order sort — so committing it would duplicate 293 KB that reg
 nothing the parquet cannot. §8's committed-artifacts list is "results.parquet + config.json";
 raw.jsonl is working state, and is treated as such.
 
-**Effect.** The release is reproducible from the repo with no network and no Ollama:
-`filinglens grade v0.1` and `filinglens report v0.1` run entirely off the committed parquet,
-config, and labels, which is the same guarantee CI relies on.
+**Effect.** Verdicts, CIs, and the report regenerate deterministically from the committed
+parquet, config, and labels, with no Ollama and no model calls. Ground truth is not in the
+committed set: `report.grade_run` resolves facts through `corpus.load_companyfacts`, which
+reads the gitignored `data/cache/`, so a fresh clone must run `filinglens fetch` once —
+against the pinned accessions — before `grade` and `report` will run. CI is fully offline
+because it works on fixtures, not because the grade path is network-free.
 
 ## ADR-005 — §6 unattended-runtime estimate corrected
 
@@ -162,3 +165,67 @@ rewriting the spec (per its header governance). The README and eval-report cite 
 figure, and this ADR is the pointer. Nothing downstream depended on the estimate — the run
 was unattended and resumable by design — so the correction is documentation, not a code
 change.
+
+## ADR-006 — Labels are written per run, not at the runs root (§7, §8)
+
+**Status: accepted.** Date: 2026-07-21. Records a path that has always deviated from a
+frozen number in architecture.md.
+
+**The deviation.** §7 says "labels live in `runs/labels.csv` (committed)" and §8's
+committed-artifacts line repeats `runs/labels.csv`. The code writes `runs/{run_id}/labels.csv`
+— `label.labels_path` is `run_dir / LABELS_FILENAME`, with `run_dir = Path("runs") / run_id`
+in `cli.py`. The committed file is `runs/v0.1/labels.csv`.
+
+**Why the code is right.** Labels are graded against one run's rows: a label references a
+specific `(company, kpi, model, cell)` verdict produced by a specific grid, and the taxonomy
+counts in the report are computed per run. A single root-level file cannot hold labels for
+two runs without a run column, and a second grid would either overwrite it or silently mix
+verdicts from different model digests. Run-scoping makes the artifact set uniform —
+`results.parquet`, `config.json`, and `labels.csv` all live under `runs/{run_id}/` — which is
+also what ADR-004 committed.
+
+**Why not edit §7/§8.** architecture.md is frozen; deviations are recorded here rather than by
+rewriting the spec (per its header governance). ADR-004 used the run-scoped path in passing
+without recording the change — this entry is the missing record, not a new decision.
+
+**Correction.** `label.py`'s module docstring cited "§8" as the authority for the run-scoped
+path. §8 says the opposite; the docstring now points here.
+
+## ADR-007 — The `run` subcommand was never exposed (§8)
+
+**Status: accepted.** Date: 2026-07-21. Records a CLI surface narrower than the frozen spec.
+
+**The deviation.** §8 lists the CLI as `fetch | sanity | run --models --cells --kpis | grade
+| label | report`. `cli.py` registers `fetch`, `sanity`, `grade`, `label`, `report`. There is
+no `run` subcommand; `extract.run_grid` has no CLI entry point and is driven directly.
+
+**Why.** The grid is a 5-7 h unattended job (ADR-005) with a resume log, a preflight context
+check, and pinned model digests. It is run once per release, not interactively, and the
+parameters that would have been flags (`--models --cells --kpis`) are exactly the ones that
+must stay frozen for the committed `config.json` to describe the committed parquet. Exposing
+them as CLI flags invites a grid whose config no longer matches its results. Nothing in the
+release path needs it: `grade` and `report` read the committed artifacts, and CI never runs a
+grid.
+
+**Effect.** CHANGELOG already documents the shipped set (`fetch · sanity · grade · label ·
+report`). `cli.py`'s module docstring listed `run` and no longer does. Anyone reproducing the
+grid calls `extract.run_grid` directly, as the v0.1 run did.
+
+## ADR-008 — `sections.json` is not cached (§8)
+
+**Status: accepted.** Date: 2026-07-21. Records a cache artifact the spec names and the code
+never writes.
+
+**The deviation.** §8's cache layout is `data/cache/{cik}/{accession}/{filing.html, text.txt,
+sections.json, companyfacts.json}`. `corpus.fetch_artifacts` writes three of those four; no
+`sections.json` is produced, and none exists on disk for any of the 10 pinned filings.
+
+**Why.** Section slicing is a pure function of `text.txt` — `sections.slice_item` and
+`find_statements_start` derive Item boundaries deterministically from the cached text on
+every call, in milliseconds. Persisting the result would add a fourth artifact that can fall
+out of sync with the text it was derived from, and whose staleness nothing checks. ADR-002
+changed how statements are located; a cached `sections.json` written before that change would
+have survived it silently.
+
+**Effect.** Cache layout is three files per accession. `corpus.py`'s module docstring already
+described the three-file layout; §8 is the outlier, and this entry records it.

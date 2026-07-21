@@ -75,35 +75,6 @@ beats free-form (4.8% [1.3, 8.5]). Sharpest cell: qwen on `eps_diluted` = 7.5% [
   grading "273 cents" as $273. Flipped 2 of 600 rows. A *stated but unreadable* scale now
   fails loudly rather than becoming a guess.
 
-## Day D does next
-
-1. **`feat: add failure-label review loop`** + hand-label. 230 incorrect items; 15 carry an
-   auto `wrong-period` label, **215 are unlabelled and need Rishik's eyes**. `filinglens
-   label` does not exist yet — build it, then label into `runs/labels.csv` (committed, §7).
-   Expect three clusters from the Day C spot-check: scale-error (digits right, label wrong
-   — the dominant qwen/3B mode), wrong-concept line-item grabs (e.g. XOM `323,905` = Sales
-   and other operating revenue, not Total revenues `332,238`), and the prior-year column.
-   Budget for this: it is the report's centerpiece and it is manual.
-2. **Settle §14's "full grid results committed (parquet + report)".** Only the report is
-   committed; `results.parquet` (18 KB) and `raw.jsonl` (293 KB) are gitignored per
-   instruction on 2026-07-16. Either commit the parquet or record an ADR — §14 is binding
-   for the release.
-3. **`test: complete coverage to gate`** — currently 278 tests, 100% on all 12 modules,
-   gate is >=85%. Likely already satisfied; verify the §10 integration item (fixture ->
-   run -> grade -> report end to end in CI under 2 min) is exercised as one real test.
-4. **`ci: finalize workflow`** — CI must never touch network or Ollama (§8). Add the
-   badge only after the first green run.
-5. **`docs: write README with measured results`** — use the frozen §13 limitations and the
-   honest framing paragraph verbatim. **Do not compare 87.8% to FinanceBench's 81%-wrong
-   headline**: this measures headline-figure extraction with the statements already in
-   context, a far easier task than FinanceBench's reasoning questions. Cite FinanceBench
-   (arXiv 2311.11944) only as the verified prior-art anchor for the gap, never as a
-   baseline. Also: §6's runtime estimate ("1-2.5 h unattended M4") measured ~49 s/call on
-   a base M4 — roughly 5-7 h for 600 calls. Correct it or note it.
-6. **`chore: release v0.1.0`** — tag + notes. Before tagging, run the §14 checks: boundary
-   rule grep (zero employer/internship/private-work references in README, docs/, src/, and
-   `git log`), `git log --format=full` sole-author check, no AI-tooling files in the repo.
-
 Known gaps to state, not fix, in v0.1: `net_income`'s tag chain is one tag deep where
 `revenue` has three (CAT fell through it); and the +/-7 day period rule counts a missing
 `fiscal_period_end` as `wrong-period`, which is the strict reading of §3.
