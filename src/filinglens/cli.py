@@ -87,13 +87,27 @@ def _load_run(args: argparse.Namespace) -> tuple[Any, list[Any], list[Any], dict
     return frame, pins, kpis, config
 
 
+def _grade_run(frame: Any, pins: list[Any], kpis: list[Any], cache: Path) -> list[Any]:
+    """grade_run with a friendly error when the ground-truth cache is missing."""
+    from filinglens import report
+
+    try:
+        return report.grade_run(frame, pins, kpis, cache)
+    except FileNotFoundError as exc:
+        print(
+            f"error: ground-truth cache missing ({exc.filename}); "
+            "run `uv run filinglens fetch` once (network required, downloads the "
+            "pinned EDGAR facts), then retry",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
+
+
 def _cmd_grade(args: argparse.Namespace) -> int:
     from collections import Counter
 
-    from filinglens import report
-
     frame, pins, kpis, _ = _load_run(args)
-    items = report.grade_run(frame, pins, kpis, args.cache)
+    items = _grade_run(frame, pins, kpis, args.cache)
     counts = Counter(i.verdict.value for i in items)
     scored = sum(1 for i in items if i.scored)
     correct = counts.get("correct", 0)
@@ -107,7 +121,7 @@ def _cmd_report(args: argparse.Namespace) -> int:
     from filinglens import label, report
 
     frame, pins, kpis, config = _load_run(args)
-    items = report.grade_run(frame, pins, kpis, args.cache)
+    items = _grade_run(frame, pins, kpis, args.cache)
     run_dir = Path("runs") / args.run_id
     labels = label.load_labels(label.labels_path(run_dir))
     report.write_report(items, args.out, config=config, generated=label.today(), labels=labels)
@@ -116,11 +130,11 @@ def _cmd_report(args: argparse.Namespace) -> int:
 
 
 def _cmd_label(args: argparse.Namespace) -> int:  # pragma: no cover - interactive loop
-    from filinglens import label, report
+    from filinglens import label
     from filinglens.grade import FailureLabel
 
     frame, pins, kpis, _ = _load_run(args)
-    items = report.grade_run(frame, pins, kpis, args.cache)
+    items = _grade_run(frame, pins, kpis, args.cache)
     run_dir = Path("runs") / args.run_id
     path = label.labels_path(run_dir)
 
