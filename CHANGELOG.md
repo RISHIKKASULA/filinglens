@@ -4,6 +4,32 @@ All notable changes to filinglens. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] — 2026-08-13
+
+### Added
+
+- `filinglens report --html <path>` — a self-contained single-file HTML report built
+  entirely offline from the committed run artifacts: headline accuracies with CIs,
+  pairwise deltas (inconclusive labeled as such), the per-KPI × model table, the failure
+  taxonomy, and a methodology footer with the pinned weight digests. No Ollama, no GPU,
+  no network, no EDGAR cache.
+- `filinglens grade` now writes `runs/{run_id}/verdicts.csv` (committed for v0.1) so the
+  HTML report can compute every number without re-grading against the cache.
+- README: "See the results in 30 seconds" quickstart, a Prerequisites block, and the
+  exact `ollama pull` commands plus digest-verification pointer for reproducing the grid.
+
+### Fixed
+
+- `grade`/`report`/`label` without a prior fetch now print how to populate the EDGAR
+  cache instead of dying with a raw `FileNotFoundError`.
+- README test count stated precisely: 298 tests collected by pytest (230 test functions
+  plus parametrized cases).
+
+### Notes
+
+- This is the first tagged release carrying the corrected reproducibility wording — the
+  v0.1.0 tag predates the fix that landed in `3fee37d`/`ce68818`.
+
 ## [0.1.0] — 2026-07-17
 
 First release. An XBRL-graded evaluation harness measuring how reliably local 7–8B LLMs
@@ -57,4 +83,5 @@ scale-error 129 · hallucination 55 · wrong-concept 30 · wrong-period 16.
 - §6's "~1–2.5 h unattended" runtime estimate measured ~5–7 h for 600 calls on a base M4
   (ADR-005).
 
+[0.2.0]: https://github.com/RISHIKKASULA/filinglens/releases/tag/v0.2.0
 [0.1.0]: https://github.com/RISHIKKASULA/filinglens/releases/tag/v0.1.0
