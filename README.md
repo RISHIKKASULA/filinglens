@@ -15,6 +15,16 @@ filings are the license-clean corpus for exactly that document class, and the on
 ground truth is free: every company files its own numbers as structured XBRL. This project
 measures the question directly.
 
+## Prerequisites
+
+- Python ≥ 3.12 and [uv](https://docs.astral.sh/uv/) — everything below runs through `uv`.
+- [Ollama](https://ollama.com/) **only** if you want to re-run the model grid itself;
+  grading and the report need no model.
+- One EDGAR fetch (`uv run filinglens fetch`, network) before grading; everything after
+  is offline.
+
+Verify the whole harness offline in ~20 seconds: `uv sync && uv run pytest`.
+
 ## What was measured
 
 The v0.1 grid: **10 large-cap, plain us-gaap filers × 5 KPIs × 3 local models × a 2×2
@@ -137,9 +147,21 @@ uv run filinglens report v0.1    # regenerate docs/eval-report.md (taxonomy from
 uv run pytest                    # 294 tests, ≥85% core coverage, fixture E2E
 ```
 
-Re-running the grid itself needs Ollama and the three pinned models; on a base M4 it took
-~49 s/call, roughly **5–7 h unattended** for 600 calls (the frozen §6 estimate of 1–2.5 h
-was optimistic; see ADR-005).
+Re-running the grid itself needs [Ollama](https://ollama.com/download) and the three
+pinned models:
+
+```bash
+ollama pull llama3.1:8b-instruct-q4_K_M
+ollama pull qwen2.5:7b-instruct-q4_K_M
+ollama pull llama3.2:3b-instruct-q4_K_M
+```
+
+The per-model sha256 weight digests are pinned in
+[`runs/v0.1/config.json`](runs/v0.1/config.json); the ID column of `ollama list` is the
+first 12 hex characters of each digest — compare to confirm you are running the graded
+weights.
+On a base M4 the grid took ~49 s/call, roughly **5–7 h unattended** for 600 calls (the
+frozen §6 estimate of 1–2.5 h was optimistic; see ADR-005).
 
 ## Roadmap (post-v0.1)
 
