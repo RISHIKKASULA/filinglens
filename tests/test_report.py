@@ -358,3 +358,46 @@ def test_output_mode_delta_is_reported_when_it_favours_schema() -> None:
         ]
     md = report.render(items, n_resamples=N)
     assert "favours schema-constrained" in md
+
+
+# --- offline HTML report (verdicts.csv round-trip) -----------------------------------
+
+
+def test_verdicts_round_trip(tmp_path: Path) -> None:
+    items = _spread([Verdict.CORRECT, Verdict.INCORRECT, Verdict.NO_GROUND_TRUTH])
+    path = report.write_verdicts(items, tmp_path)
+    assert path == tmp_path / "verdicts.csv"
+    loaded = report.load_verdicts(tmp_path)
+    assert [(i.ticker, i.verdict) for i in loaded] == [(i.ticker, i.verdict) for i in items]
+
+
+def test_render_html_is_self_contained_and_offline(tmp_path: Path) -> None:
+    items = _spread([Verdict.CORRECT] * 3 + [Verdict.INCORRECT], model="m1") + _spread(
+        [Verdict.CORRECT] * 2 + [Verdict.INCORRECT] * 2, model="m2"
+    )
+    loaded = report.load_verdicts(Path(report.write_verdicts(items, tmp_path)).parent)
+    html = report.render_html(
+        loaded,
+        config={"models": [{"model": "m1", "digest": "d" * 64}], "determinism": {}},
+        n_resamples=N,
+    )
+    assert html.startswith("<!doctype html>")
+    assert "<script" not in html and "http" not in html  # no CDN, no external fetches
+    assert "75.0%" in html  # m1: 3 of 4 correct
+    assert "50.0%" in html  # m2: 2 of 4 correct
+    assert "d" * 64 in html  # full pinned digest in the methodology footer
+    assert "filinglens report" in html  # regeneration command
+
+
+def test_html_report_on_the_committed_v01_artifacts_matches_published_rounding() -> None:
+    """Two published README numbers must fall out of the committed artifacts."""
+    from filinglens import label
+
+    run_dir = Path("runs/v0.1")
+    items = report.load_verdicts(run_dir)
+    labels = label.load_labels(label.labels_path(run_dir))
+    html = report.render_html(items, labels=labels)
+    assert "87.8% [81.5, 93.8]" in html  # llama3.1:8b headline accuracy
+    assert "7.5% [0.0, 15.0]" in html  # the qwen EPS cliff
+    assert html.count("<td>129</td>") == 1  # scale-error taxonomy count
+    assert "inconclusive" in html  # the 3B-vs-qwen delta stays labeled

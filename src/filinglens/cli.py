@@ -57,6 +57,13 @@ def main(argv: list[str] | None = None) -> int:
     report_parser.add_argument(
         "--out", type=Path, default=Path("docs/eval-report.md"), help="output markdown path"
     )
+    report_parser.add_argument(
+        "--html",
+        type=Path,
+        default=None,
+        help="write a self-contained HTML report built offline from the committed "
+        "run artifacts (no EDGAR cache, no network) instead of the markdown report",
+    )
 
     args = parser.parse_args(argv)
 
@@ -106,6 +113,8 @@ def _grade_run(frame: Any, pins: list[Any], kpis: list[Any], cache: Path) -> lis
 def _cmd_grade(args: argparse.Namespace) -> int:
     from collections import Counter
 
+    from filinglens import report
+
     frame, pins, kpis, _ = _load_run(args)
     items = _grade_run(frame, pins, kpis, args.cache)
     counts = Counter(i.verdict.value for i in items)
@@ -114,16 +123,28 @@ def _cmd_grade(args: argparse.Namespace) -> int:
     print(f"run {args.run_id}: {len(items)} items, {scored} scored, {correct} correct")
     for verdict, n in sorted(counts.items()):
         print(f"  {verdict:16} {n}")
+    verdicts_path = report.write_verdicts(items, Path("runs") / args.run_id)
+    print(f"verdicts written to {verdicts_path} (used by `report --html` for offline builds)")
     return 0
 
 
 def _cmd_report(args: argparse.Namespace) -> int:
     from filinglens import label, report
 
-    frame, pins, kpis, config = _load_run(args)
-    items = _grade_run(frame, pins, kpis, args.cache)
     run_dir = Path("runs") / args.run_id
     labels = label.load_labels(label.labels_path(run_dir))
+
+    if args.html is not None:
+        import json
+
+        config = json.loads((run_dir / "config.json").read_text())
+        items = report.load_verdicts(run_dir)
+        args.html.write_text(report.render_html(items, config=config, labels=labels))
+        print(f"wrote {args.html} (offline, from the committed run artifacts)")
+        return 0
+
+    frame, pins, kpis, config = _load_run(args)
+    items = _grade_run(frame, pins, kpis, args.cache)
     report.write_report(items, args.out, config=config, generated=label.today(), labels=labels)
     print(f"wrote {args.out}")
     return 0

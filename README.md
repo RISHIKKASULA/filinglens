@@ -15,6 +15,16 @@ filings are the license-clean corpus for exactly that document class, and the on
 ground truth is free: every company files its own numbers as structured XBRL. This project
 measures the question directly.
 
+## See the results in 30 seconds
+
+```bash
+uv sync
+uv run filinglens report v0.1 --html report.html   # then open report.html
+```
+
+Builds the full evaluation report — accuracies with CIs, deltas, the failure taxonomy —
+entirely from the committed run artifacts: no Ollama, no GPU, no network.
+
 ## Prerequisites
 
 - Python ≥ 3.12 and [uv](https://docs.astral.sh/uv/) — everything below runs through `uv`.
@@ -144,7 +154,8 @@ uv sync
 uv run filinglens fetch          # one-time: cache the pinned XBRL companyfacts from EDGAR
 uv run filinglens grade v0.1     # grade the committed grid against XBRL (offline after fetch)
 uv run filinglens report v0.1    # regenerate docs/eval-report.md (taxonomy from labels.csv)
-uv run pytest                    # 294 tests, ≥85% core coverage, fixture E2E
+uv run pytest                    # 298 tests collected (230 test functions
+                                 # plus parametrized cases), ≥85% core coverage
 ```
 
 Re-running the grid itself needs [Ollama](https://ollama.com/download) and the three

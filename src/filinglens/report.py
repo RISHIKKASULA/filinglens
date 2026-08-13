@@ -416,6 +416,235 @@ def _limitations_section(tickers: Sequence[str]) -> str:
     )
 
 
+# --- offline HTML report -------------------------------------------------------------
+
+VERDICTS_FILENAME = "verdicts.csv"
+
+
+def write_verdicts(items: Sequence[GradedItem], run_dir: Path) -> Path:
+    """Commit a run's verdicts so the HTML report can build without the EDGAR cache.
+
+    One row per grid item, just the key and the verdict — everything the offline
+    statistics need and nothing that would need ground truth to interpret.
+    """
+    path = run_dir / VERDICTS_FILENAME
+    frame = pd.DataFrame(
+        [
+            {
+                "ticker": i.ticker,
+                "kpi": i.kpi,
+                "model": i.model,
+                "cell": i.cell,
+                "verdict": i.verdict.value,
+            }
+            for i in items
+        ]
+    )
+    frame.to_csv(path, index=False)
+    return path
+
+
+def load_verdicts(run_dir: Path) -> list[GradedItem]:
+    """Rebuild minimal GradedItems from a committed verdicts.csv (no cache needed)."""
+    frame = pd.read_csv(run_dir / VERDICTS_FILENAME)
+    return [
+        GradedItem(
+            ticker=str(row.ticker),
+            kpi=str(row.kpi),
+            model=str(row.model),
+            cell=str(row.cell),
+            verdict=Verdict(str(row.verdict)),
+        )
+        for row in frame.itertuples()
+    ]
+
+
+def _html_delta_row(name_a: str, name_b: str, ci: Interval) -> str:
+    if ci.point is None:
+        return f"<tr><td>{name_a} &minus; {name_b}</td><td>n/a</td><td>not estimable</td></tr>"
+    reading = (
+        '<strong class="inconclusive">inconclusive</strong> (CI includes zero)'
+        if ci.includes_zero
+        else "favours " + (name_a if ci.point > 0 else name_b)
+    )
+    return f"<tr><td>{name_a} &minus; {name_b}</td><td>{ci.format()}</td><td>{reading}</td></tr>"
+
+
+def render_html(
+    items: Sequence[GradedItem],
+    config: dict[str, Any] | None = None,
+    labels: dict[str, LabelRecord] | None = None,
+    n_resamples: int = bootstrap.N_RESAMPLES,
+) -> str:
+    """Render the evaluation results as one self-contained HTML page.
+
+    Built entirely from the committed run artifacts (verdicts.csv, labels.csv,
+    config.json): zero network, zero LLM calls, zero EDGAR cache. Every number is
+    computed here at build time by the same bootstrap machinery as the markdown
+    report; nothing is hard-coded.
+    """
+    labels = labels or {}
+    config = config or {}
+    tickers = tickers_of(items)
+    models = sorted({i.model for i in items})
+    kpi_names = sorted({i.kpi for i in items})
+    out: list[str] = []
+
+    def table(headers: Sequence[str], rows: Sequence[str]) -> None:
+        out.append("<table><thead><tr>")
+        out.extend(f"<th>{h}</th>" for h in headers)
+        out.append("</tr></thead><tbody>")
+        out.extend(rows)
+        out.append("</tbody></table>")
+
+    out.append(_HTML_HEAD)
+    out.append("<h1>filinglens v0.1 — evaluation results</h1>")
+    out.append(
+        "<p>How reliably can a local 7&ndash;8B LLM extract financial figures from SEC filing "
+        "text? A 10-company &times; 5-KPI &times; 3-model &times; 2&times;2-strategy grid "
+        "(600 deterministic "
+        "calls), graded against each company's own XBRL facts.</p>"
+    )
+    out.append(
+        "<p class=caveat><strong>Read this before the numbers.</strong> These scores "
+        "measure headline-figure <em>extraction</em> with the financial statements "
+        "already in the model's context — a far easier task than reasoning benchmarks "
+        "like FinanceBench, and not comparable to them. Nothing here should be read as "
+        "any model outperforming a frontier model on financial reasoning. N = 10 "
+        "companies, so the confidence intervals are wide; where an interval includes "
+        "zero the comparison is reported as inconclusive and means it.</p>"
+    )
+
+    out.append("<h2>Accuracy per model (all cells, 95% CI)</h2>")
+    rows = []
+    for model in models:
+        subset = _where(items, model=model)
+        ci = accuracy_interval(subset, tickers, n_resamples=n_resamples)
+        scored = sum(1 for i in subset if i.scored)
+        rows.append(
+            f"<tr><td><code>{model}</code></td><td>{scored}</td><td>{ci.format()}</td></tr>"
+        )
+    table(["model", "n scored", "accuracy [95% CI]"], rows)
+
+    out.append("<h2>Pairwise deltas (95% CI)</h2>")
+    out.append(
+        "<p>Paired by company: a bootstrap replicate draws a company once and takes its "
+        "items from both arms.</p>"
+    )
+    rows = []
+    for a, b in itertools.combinations(models, 2):
+        ci = delta_interval(_where(items, model=a), _where(items, model=b), tickers, n_resamples)
+        rows.append(_html_delta_row(f"<code>{a}</code>", f"<code>{b}</code>", ci))
+    section = [i for i in items if i.cell.startswith("A")]
+    retrieval = [i for i in items if i.cell.startswith("B")]
+    rows.append(
+        _html_delta_row(
+            "Item-8 section",
+            "BM25 retrieval",
+            delta_interval(section, retrieval, tickers, n_resamples),
+        )
+    )
+    freeform = [i for i in items if i.cell.endswith("1")]
+    structured = [i for i in items if i.cell.endswith("2")]
+    rows.append(
+        _html_delta_row(
+            "free-form",
+            "schema-constrained",
+            delta_interval(freeform, structured, tickers, n_resamples),
+        )
+    )
+    table(["comparison", "delta accuracy [95% CI]", "reading"], rows)
+
+    out.append("<h2>Accuracy per KPI &times; model</h2>")
+    rows = []
+    for kpi in kpi_names:
+        cells_html = "".join(
+            "<td>"
+            + accuracy_interval(_where(items, kpi=kpi, model=m), tickers, n_resamples).format()
+            + "</td>"
+            for m in models
+        )
+        rows.append(f"<tr><td>{kpi}</td>{cells_html}</tr>")
+    table(["KPI"] + [f"<code>{m}</code>" for m in models], rows)
+
+    out.append("<h2>Failure taxonomy</h2>")
+    failures = [i for i in items if i.scored and i.verdict is not Verdict.CORRECT]
+    n_scored = sum(1 for i in items if i.scored)
+    counts = Counter(label.label_of(i, labels) for i in failures)
+    out.append(
+        f"<p>{len(failures)} incorrect / failed items out of {n_scored} scored, every "
+        "one labeled (hand review plus the grader's deterministic calls).</p>"
+    )
+    rows = [
+        f"<tr><td><code>{lbl.value}</code></td><td>{counts.get(lbl, 0)}</td>"
+        f"<td>{_TAXONOMY_HOW[lbl]}</td></tr>"
+        for lbl in _TAXONOMY_ORDER
+    ]
+    unlabelled = counts.get(None, 0)
+    if unlabelled:
+        rows.append(f"<tr><td>unlabelled</td><td>{unlabelled}</td><td>awaiting review</td></tr>")
+    table(["label", "n", "what it means"], rows)
+
+    excluded: dict[tuple[str, str], int] = {}
+    for i in items:
+        if not i.scored:
+            excluded[(i.ticker, i.kpi)] = excluded.get((i.ticker, i.kpi), 0) + 1
+    excluded_note = (
+        "; ".join(f"{t} {k} ({n} items)" for (t, k), n in sorted(excluded.items()))
+        if excluded
+        else "none"
+    )
+
+    out.append("<footer><h2>Methodology</h2><ul>")
+    for m in config.get("models", []):
+        out.append(
+            f"<li>Model <code>{m['model']}</code>, weights digest <code>{m['digest']}</code></li>"
+        )
+    det = config.get("determinism", {})
+    out.append(
+        f"<li>Grid: {len(tickers)} companies &times; {len(kpi_names)} KPIs &times; {len(models)} "
+        f"models &times; 4 cells = {len(items)} calls, deterministic (temperature "
+        f"{det.get('temperature')}, seed {det.get('seed')}, num_ctx {det.get('num_ctx')})</li>"
+    )
+    out.append(f"<li>Excluded as no-ground-truth (out of every denominator): {excluded_note}</li>")
+    out.append(
+        "<li>Intervals: cluster bootstrap by company, B = "
+        f"{n_resamples:,}, seeded, percentile 95% CIs</li>"
+    )
+    out.append(
+        "<li>Built offline from the committed run artifacts (verdicts.csv, labels.csv, "
+        "config.json) — no figure here needs the EDGAR cache; regenerate with "
+        "<code>uv run filinglens report v0.1 --html report.html</code></li>"
+    )
+    out.append("</ul></footer></body></html>")
+    return "\n".join(out)
+
+
+_HTML_HEAD = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>filinglens v0.1 results</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+         Arial, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1rem;
+         color: #1a1a1a; line-height: 1.5; }
+  h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; }
+  table { border-collapse: collapse; margin: 0.75rem 0; width: 100%; }
+  th, td { border: 1px solid #ddd; padding: 0.4rem 0.6rem; text-align: left;
+           font-size: 0.9rem; }
+  th { background: #f5f5f5; }
+  .caveat { border-left: 3px solid #1a56a0; padding: 0.5rem 0.75rem; background: #f2f6fb; }
+  .inconclusive { color: #1a56a0; }
+  footer { margin-top: 2.5rem; font-size: 0.85rem; color: #555; }
+  footer code { word-break: break-all; }
+</style>
+</head>
+<body>"""
+
+
 def write_report(
     items: Sequence[GradedItem],
     path: Path,
